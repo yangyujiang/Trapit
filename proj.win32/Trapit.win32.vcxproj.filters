@@ -25,6 +25,9 @@
     <Filter Include="source\View\views">
       <UniqueIdentifier>{515394cc-0c4b-4261-9263-d2d8fcc54c30}</UniqueIdentifier>
     </Filter>
+    <Filter Include="source\support">
+      <UniqueIdentifier>{1b3ab781-a5b8-4a7f-bfe7-b346dddec2c9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Trapit.ico">
@@ -58,11 +61,38 @@
     <ClInclude Include="..\Classes\HelloWorldScene.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="GameGroundView.h">
+    <ClInclude Include="GamePlayController.h">
+      <Filter>source\View\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="GamePlayView.h">
       <Filter>source\View\views</Filter>
     </ClInclude>
-    <ClInclude Include="GameGroundController.h">
-      <Filter>source\View\controller</Filter>
+    <ClInclude Include="GameInsectView.h">
+      <Filter>source\View\views</Filter>
+    </ClInclude>
+    <ClInclude Include="GameInsectModel.h">
+      <Filter>source\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="GamePlayModel.h">
+      <Filter>source\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="B2DebugDrawLayer.h">
+      <Filter>source\support</Filter>
+    </ClInclude>
+    <ClInclude Include="B2EasyBox2D.h">
+      <Filter>source\support</Filter>
+    </ClInclude>
+    <ClInclude Include="Constant.h">
+      <Filter>source\support</Filter>
+    </ClInclude>
+    <ClInclude Include="GLES-Render.h">
+      <Filter>source\support</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawUtil.h">
+      <Filter>source\support</Filter>
+    </ClInclude>
+    <ClInclude Include="GlobalDef.h">
+      <Filter>source\support</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -75,11 +105,29 @@
     <ClCompile Include="..\Classes\HelloWorldScene.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="GameGroundView.cpp">
+    <ClCompile Include="GamePlayController.cpp">
+      <Filter>source\View\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="GamePlayView.cpp">
       <Filter>source\View\views</Filter>
     </ClCompile>
-    <ClCompile Include="GameGroundController.cpp">
-      <Filter>source\View\controller</Filter>
+    <ClCompile Include="GameInsectView.cpp">
+      <Filter>source\View\views</Filter>
+    </ClCompile>
+    <ClCompile Include="GameInsectModel.cpp">
+      <Filter>source\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="GamePlayModel.cpp">
+      <Filter>source\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="B2DebugDrawLayer.cpp">
+      <Filter>source\support</Filter>
+    </ClCompile>
+    <ClCompile Include="B2EasyBox2D.cpp">
+      <Filter>source\support</Filter>
+    </ClCompile>
+    <ClCompile Include="GLES-Render.cpp">
+      <Filter>source\support</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

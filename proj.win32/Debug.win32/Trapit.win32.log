@@ -1,9 +1,39 @@
-﻿生成启动时间为 2013/3/22 13:10:08。
-     1>项目“D:\cocos2d-x\Projects\Trapit\Trapit\proj.win32\Trapit.win32.vcxproj”在节点 2 上(clean 个目标)。
-     1>_PrepareForClean:
-         正在删除文件“Debug.win32\Trapit.win32.lastbuildstate”。
-     1>已完成生成项目“D:\cocos2d-x\Projects\Trapit\Trapit\proj.win32\Trapit.win32.vcxproj”(clean 个目标)的操作。
+﻿生成启动时间为 2013/3/22 23:11:45。
+     1>项目“D:\cocos2d-x\Projects\Trapit\Trapit\proj.win32\Trapit.win32.vcxproj”在节点 2 上(build 个目标)。
+     1>InitializeBuildStatus:
+         正在创建“Debug.win32\Trapit.win32.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+       ClCompile:
+         D:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I. /I..\Classes /I"D:\cocos2d-x\Projects\Trapit\cocos2dx" /I"D:\cocos2d-x\Projects\Trapit\cocos2dx\include" /I"D:\cocos2d-x\Projects\Trapit\cocos2dx\kazmath\include" /I"D:\cocos2d-x\Projects\Trapit\cocos2dx\platform\win32" /I"D:\cocos2d-x\Projects\Trapit\cocos2dx\platform\third_party\win32" /I"D:\cocos2d-x\Projects\Trapit\cocos2dx\platform\third_party\win32\OGLES" /I"D:\cocos2d-x\Projects\Trapit\external" /I"D:\cocos2d-x\Projects\Trapit\CocosDenshion\include" /I"C:\Program Files\Visual Leak Detector\include" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D STRICT /D _CRT_SECURE_NO_WARNINGS /D _SCL_SECURE_NO_WARNINGS_DEBUG /D COCOS2D_DEBUG=1 /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug.win32\\" /Fd"Debug.win32\vc100.pdb" /Gd /TP /wd4267 /wd4251 /wd4244 /analyze- /errorReport:prompt GamePlayModel.cpp
+         GamePlayModel.cpp
+       ResourceCompile:
+         所有输出均为最新。
+       ManifestResourceCompile:
+         所有输出均为最新。
+       Link:
+         D:\Program Files\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\cocos2d-x\Projects\Trapit\Debug.win32\Trapit.win32.exe" /INCREMENTAL /NOLOGO /LIBPATH:"D:\cocos2d-x\Projects\Trapit\Debug.win32\\" /LIBPATH:"C:\Program Files\Visual Leak Detector\lib\Win32" libcocos2d.lib libExtensions.lib opengl32.lib glew32.lib libBox2d.lib libCocosDenshion.lib vld.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug.win32\Trapit.win32.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"D:\cocos2d-x\Projects\Trapit\Debug.win32\Trapit.win32.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\cocos2d-x\Projects\Trapit\Debug.win32\Trapit.win32.lib" /MACHINE:X86 Debug.win32\Trapit.res
+         Debug.win32\Trapit.win32.exe.embed.manifest.res
+         Debug.win32\AppDelegate.obj
+         Debug.win32\HelloWorldScene.obj
+         Debug.win32\B2DebugDrawLayer.obj
+         Debug.win32\B2EasyBox2D.obj
+         Debug.win32\GameInsectModel.obj
+         Debug.win32\GameInsectView.obj
+         Debug.win32\GamePlayController.obj
+         Debug.win32\GamePlayModel.obj
+         Debug.win32\GamePlayView.obj
+         "Debug.win32\GLES-Render.obj"
+         Debug.win32\main.obj
+       Manifest:
+         C:\Program Files\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"Debug.win32\Trapit.win32.exe.embed.manifest" /manifest Debug.win32\Trapit.win32.exe.intermediate.manifest
+         所有输出均为最新。
+       LinkEmbedManifest:
+         所有输出均为最新。
+         Trapit.win32.vcxproj -> D:\cocos2d-x\Projects\Trapit\Debug.win32\Trapit.win32.exe
+       FinalizeBuildStatus:
+         正在删除文件“Debug.win32\Trapit.win32.unsuccessfulbuild”。
+         正在对“Debug.win32\Trapit.win32.lastbuildstate”执行 Touch 任务。
+     1>已完成生成项目“D:\cocos2d-x\Projects\Trapit\Trapit\proj.win32\Trapit.win32.vcxproj”(build 个目标)的操作。
 
 生成成功。
 
-已用时间 00:00:00.06
+已用时间 00:00:04.74

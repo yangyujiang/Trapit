@@ -133,16 +133,31 @@
   <ItemGroup>
     <ClInclude Include="..\Classes\AppDelegate.h" />
     <ClInclude Include="..\Classes\HelloWorldScene.h" />
-    <ClInclude Include="GameGroundController.h" />
-    <ClInclude Include="GameGroundView.h" />
+    <ClInclude Include="B2DebugDrawLayer.h" />
+    <ClInclude Include="B2EasyBox2D.h" />
+    <ClInclude Include="Constant.h" />
+    <ClInclude Include="DrawUtil.h" />
+    <ClInclude Include="GameInsectModel.h" />
+    <ClInclude Include="GameInsectView.h" />
+    <ClInclude Include="GamePlayController.h" />
+    <ClInclude Include="GamePlayModel.h" />
+    <ClInclude Include="GamePlayView.h" />
+    <ClInclude Include="GLES-Render.h" />
+    <ClInclude Include="GlobalDef.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Classes\AppDelegate.cpp" />
     <ClCompile Include="..\Classes\HelloWorldScene.cpp" />
-    <ClCompile Include="GameGroundController.cpp" />
-    <ClCompile Include="GameGroundView.cpp" />
+    <ClCompile Include="B2DebugDrawLayer.cpp" />
+    <ClCompile Include="B2EasyBox2D.cpp" />
+    <ClCompile Include="GameInsectModel.cpp" />
+    <ClCompile Include="GameInsectView.cpp" />
+    <ClCompile Include="GamePlayController.cpp" />
+    <ClCompile Include="GamePlayModel.cpp" />
+    <ClCompile Include="GamePlayView.cpp" />
+    <ClCompile Include="GLES-Render.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
