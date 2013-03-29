@@ -14,11 +14,12 @@ private:
 	GameModelDelegate* _observerDelegate;//虫子模型的观察者，一般为虫子的view对象
 protected:
 	b2Body* _body;//虫子的身体
+	//b2Body* _world;
 	CC_PROPERTY(float,_velocity,Velocity);//虫子速度
 	b2Fixture *visualField;//视野fixture
 protected:
 	float blood;//血量
-	bool isAlive;//虫子是否活着？
+	CC_PROPERTY_READONLY(bool,isAlive,Alive);//虫子是否活着？
 
 private://初始化的一些方法
 	void randomPositionAndAngle();//随机虫子的位置和角度

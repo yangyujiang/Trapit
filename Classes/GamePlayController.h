@@ -10,6 +10,7 @@
 #include "Box2D\Box2D.h"
 #include "GameResinBallModel.h"
 #include "GameResinBallView.h"
+#include "StaticLayer.h"
 
 USING_NS_CC;
 
@@ -19,13 +20,12 @@ protected:
 	b2MouseJoint *_mouseJoint;//调试用，鼠标关节
 
 public:
-	//vector<GamePlayView > _models;
 	b2World* _world;
 	GamePlayView *view;
+	StaticLayer* buttonLayer;//按钮层
+	MapLayer* mapLayer;//地图层
 	GameInsectView *_insectView;
 	GameInsectModel *_insectModel;
-	//GameInsectModel *insectModel2;
-	GameInsectView *insectView2;
 
 	GameResinBallModel *_resinBallModel;
 	GameResinBallView *_resinBallView;
@@ -37,6 +37,7 @@ public:
 	virtual ~GamePlayController();
 	CREATE_FUNC(GamePlayController);
 	virtual bool init();
+
 	virtual void update(float dt);
 	void step(float dt);
 	void afterStep(float dt);//// process collisions and result from callbacks called by the step
@@ -49,7 +50,8 @@ public:
 
 	void testViewDelegate();
 
-	void initResinBall();
+	void initResinBall();//初始化树脂球及其模型
+	void initInsect();//初始化虫子
 
 	//重力感应
 	void didAccelerate(cocos2d::CCAcceleration* pAccelerationValue);

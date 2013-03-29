@@ -55,12 +55,13 @@ CCSprite* B2EasyBox2D::createDebugDraw(b2World* world){
 		*/	
 	return debugSprite;
 }
-/*
-b2Body* B2EasyBox2D::createBox(b2World* world,float posX,float posY,float boxWidth,float boxHeight,bool isStatic){
-
+b2Body* B2EasyBox2D::createStaticBox(b2World* world,float posX,float posY,float boxWidth,float boxHeight,
+	void *userData,b2Filter *filter,bool isSensor){
 	b2BodyDef bodyRequest;
-	if(!isStatic) bodyRequest.type=b2_dynamicBody;
+	bodyRequest.type=b2_staticBody;
 	bodyRequest.position.Set(posX/PTM_RATIO,posY/PTM_RATIO);
+	bodyRequest.userData = userData;
+	
 	b2Body *body=world->CreateBody(&bodyRequest);
 
 	b2PolygonShape shapeRequest;
@@ -68,44 +69,106 @@ b2Body* B2EasyBox2D::createBox(b2World* world,float posX,float posY,float boxWid
 
 	b2FixtureDef fixtureRequest;
 	fixtureRequest.shape=&shapeRequest;
-	if(!isStatic) fixtureRequest.density=3.f;
+	fixtureRequest.density=1;
 	fixtureRequest.friction=0.3f;
-	fixtureRequest.restitution=0.f;
-
-	b2Fixture *fixture=body->CreateFixture(&fixtureRequest);
+	fixtureRequest.restitution=0;
+	fixtureRequest.isSensor=isSensor;
+	if(filter!=NULL) fixtureRequest.filter=*filter;
+	b2Fixture *fixture=body->CreateFixture(&fixtureRequest);//创建定制器
 
 	return body;
+
 }
-b2Body* B2EasyBox2D::createBox(b2World* world,float posX,float posY,float boxWidth,float boxHeight,bool isStatic,float angle){
-
-
-	return B2EasyBox2D::createBox(world,posX,posY,boxWidth,boxHeight,isStatic,angle,3.f,0.3f,0.3f);
-}*/
-b2Body* B2EasyBox2D::createBox(b2World* world,float posX,float posY,float boxWidth,float boxHeight,bool isStatic,void *userData,
-	float angle,float density,float friction,float restitution,b2Filter *filter,bool isSensor){
-
+b2Body* B2EasyBox2D::createBox(b2World* world,float posX,float posY,float boxWidth,float boxHeight,
+	void *userData,b2Filter *filter,bool isSensor){
 	b2BodyDef bodyRequest;
-	if(!isStatic) bodyRequest.type=b2_dynamicBody;
+	bodyRequest.type=b2_dynamicBody;
 	bodyRequest.position.Set(posX/PTM_RATIO,posY/PTM_RATIO);
+	bodyRequest.userData = userData;
 	
-	if ( userData != NULL) {
-		bodyRequest.userData = userData;
-	}
 	b2Body *body=world->CreateBody(&bodyRequest);
 
 	b2PolygonShape shapeRequest;
-	shapeRequest.SetAsBox(boxWidth/2.0f/PTM_RATIO,boxHeight/2.0f/PTM_RATIO,b2Vec2(0,0),angle);
+	shapeRequest.SetAsBox(boxWidth/2.0f/PTM_RATIO,boxHeight/2.0f/PTM_RATIO);
 
 	b2FixtureDef fixtureRequest;
 	fixtureRequest.shape=&shapeRequest;
-	if(!isStatic) fixtureRequest.density=density;
-	fixtureRequest.friction=friction;
-	fixtureRequest.restitution=restitution;
+	fixtureRequest.density=1;
+	fixtureRequest.friction=0.3f;
+	fixtureRequest.restitution=0.3f;
 	fixtureRequest.isSensor=isSensor;
 	if(filter!=NULL) fixtureRequest.filter=*filter;
-	b2Fixture *fixture=body->CreateFixture(&fixtureRequest);
+	b2Fixture *fixture=body->CreateFixture(&fixtureRequest);//创建定制器
 
 	return body;
+}
+
+/**
+		 * 创建并返回一个圆形刚体，同样所有涉及到坐标的参数都是以像素为单位
+		 * @param	world 承载所有刚体的Box2D世界
+		 * @param	posX	刚体的x坐标，以像素为单位
+		 * @param	posY	刚体的y坐标，以像素为单位
+		 * @param	radius	刚体的半径，以像素为单位
+		 * @param	userData	刚体的外观，默认为null
+		 * @param	isStatic	刚体是否为静止对象，默认为false
+		 * @return 返回一个圆形刚体
+		 */
+b2Body* B2EasyBox2D::createCircle(b2World *world, float posX, float posY, float radius,
+	void *userData,b2Filter *filter,bool isSensor) {
+			//1.创建刚体需求b2BodyDef
+			b2BodyDef bodyRequest;
+			bodyRequest.type=b2_dynamicBody;
+			bodyRequest.position.Set(posX / PTM_RATIO, posY / PTM_RATIO);//记得米和像素的转换关系
+			bodyRequest.userData = userData;
+					
+			//2.Box2D世界工厂根据需求创建createBody()生产刚体
+			b2Body *circle = world->CreateBody(&bodyRequest);
+
+			//2.创建形状
+			b2CircleShape shapeCircle;
+			shapeCircle.m_radius=radius/PTM_RATIO;
+			
+			//3.创建刚体形状需求b2FixtureDef的子类
+			b2FixtureDef fixtureRequest;
+			fixtureRequest.density=1;
+			fixtureRequest.friction = 0.3f;
+			fixtureRequest.restitution = 0;
+			fixtureRequest.isSensor=isSensor;
+			fixtureRequest.shape = &shapeCircle;
+			if(filter!=NULL)	fixtureRequest.filter=*filter;
+			
+			//4.b2Body刚体工厂根据需求CreateFixture生产形状			
+			circle->CreateFixture(&fixtureRequest);
+			
+			return circle;
+		}
+
+b2Body* B2EasyBox2D::createStaticCircle(b2World *world, float posX, float posY, float radius,
+	void *userData,b2Filter *filter,bool isSensor){
+		//1.创建刚体需求b2BodyDef
+			b2BodyDef bodyRequest;
+			bodyRequest.type=b2_staticBody;
+			bodyRequest.position.Set(posX / PTM_RATIO, posY / PTM_RATIO);//记得米和像素的转换关系
+			bodyRequest.userData = userData;			
+			//2.Box2D世界工厂根据需求创建createBody()生产刚体
+			b2Body *circle = world->CreateBody(&bodyRequest);
+
+			//2.创建形状
+			b2CircleShape shapeCircle;
+			shapeCircle.m_radius=radius/PTM_RATIO;
+			//3.创建刚体形状需求b2FixtureDef的子类
+			b2FixtureDef fixtureRequest;
+			fixtureRequest.density=1;
+			fixtureRequest.friction = 0.3f;
+			fixtureRequest.restitution = 0;
+			fixtureRequest.isSensor=isSensor;
+			fixtureRequest.shape = &shapeCircle;
+			if(filter!=NULL)	fixtureRequest.filter=*filter;
+			
+			//4.b2Body刚体工厂根据需求CreateFixture生产形状			
+			circle->CreateFixture(&fixtureRequest);
+			
+			return circle;
 }
 
 void B2EasyBox2D::shrinkBox(b2Body* body,float32 width,float32 height,float32 scale){
@@ -128,65 +191,20 @@ void B2EasyBox2D::shrinkBox(b2Body* body,float32 width,float32 height,float32 sc
 	body->CreateFixture(&fixtureRequest);
 }
 
-/**
-		 * 创建并返回一个圆形刚体，同样所有涉及到坐标的参数都是以像素为单位
-		 * @param	world 承载所有刚体的Box2D世界
-		 * @param	posX	刚体的x坐标，以像素为单位
-		 * @param	posY	刚体的y坐标，以像素为单位
-		 * @param	radius	刚体的半径，以像素为单位
-		 * @param	isStatic	刚体是否为静止对象，默认为false
-		 * @param	userData	刚体的外观，默认为null
-		 * @return 返回一个圆形刚体
-		 */
-b2Body* B2EasyBox2D::createCircle(b2World *world, float posX, float posY, float radius, bool isStatic,void *userData
-	,float density,float friction,float restitution,bool isRotation,b2Filter *filter,bool isSensor) {
-			//1.创建刚体需求b2BodyDef
-			b2BodyDef bodyRequest;
-			if(!isStatic) bodyRequest.type=b2_dynamicBody;
-			if(!isRotation) bodyRequest.fixedRotation=true;
-			bodyRequest.position.Set(posX / PTM_RATIO, posY / PTM_RATIO);//记得米和像素的转换关系
-		
-			if ( userData != NULL) {
-				//((CCNode*)userData)->setPosition(ccp(posX,posY));
-				 bodyRequest.userData = userData;
-			}
-			
-			//2.Box2D世界工厂根据需求创建createBody()生产刚体
-			b2Body *circle = world->CreateBody(&bodyRequest);
-
-			//2.创建形状
-			b2CircleShape shapeCircle;
-			shapeCircle.m_radius=radius/PTM_RATIO;
-			
-			//3.创建刚体形状需求b2FixtureDef的子类
-			b2FixtureDef fixtureRequest;
-			if(!isStatic) fixtureRequest.density=density;
-			fixtureRequest.friction = friction;
-			fixtureRequest.restitution = restitution;
-			fixtureRequest.isSensor=isSensor;
-			fixtureRequest.shape = &shapeCircle;
-			if(filter!=NULL)	fixtureRequest.filter=*filter;
-			
-			//4.b2Body刚体工厂根据需求CreateFixture生产形状			
-			circle->CreateFixture(&fixtureRequest);
-			
-			return circle;
-		}
-
 
 void B2EasyBox2D::createWrapWall(b2World* _world){
 	
 	CCSize winSize=CCDirector::sharedDirector()->getWinSize();
 
-	B2EasyBox2D::createBox(_world,winSize.width/2,winSize.height,winSize.width,PTM_RATIO,true,NULL,0,0,0);
-	B2EasyBox2D::createBox(_world,0,winSize.height/2,PTM_RATIO,winSize.height,true,0,1,0);
-	B2EasyBox2D::createBox(_world,winSize.width,winSize.height/2,PTM_RATIO,winSize.height,true,NULL,0,0,0);
-	B2EasyBox2D::createBox(_world,winSize.width/2,0,winSize.width,PTM_RATIO,true,NULL,0,0,0);
+	B2EasyBox2D::createStaticBox(_world,winSize.width/2,winSize.height,winSize.width,PTM_RATIO);
+	B2EasyBox2D::createStaticBox(_world,0,winSize.height/2,PTM_RATIO,winSize.height);
+	B2EasyBox2D::createStaticBox(_world,winSize.width,winSize.height/2,PTM_RATIO,winSize.height);
+	B2EasyBox2D::createStaticBox(_world,winSize.width/2,0,winSize.width,PTM_RATIO);
 	//创建静态障碍物
-	B2EasyBox2D::createBox(_world,100,100,50,150,true,NULL,0,0,0);
-	B2EasyBox2D::createBox(_world,600,100,50,50,true,NULL,0,0,0);
-	B2EasyBox2D::createBox(_world,300,300,100,100,true,NULL,0,0,0);
-	B2EasyBox2D::createCircle(_world,500,500,50,true,NULL,0,0,0);
+	B2EasyBox2D::createStaticBox(_world,100,100,50,150);
+	B2EasyBox2D::createStaticBox(_world,600,100,50,50);
+	B2EasyBox2D::createStaticBox(_world,300,300,100,100);
+	B2EasyBox2D::createStaticCircle(_world,500,500,50);
 }
 
 /**

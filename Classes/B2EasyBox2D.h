@@ -27,18 +27,23 @@ public:
 		 * @param	posY box的y坐标，以像素为单位
 		 * @param	boxWidth box的宽度，以像素为单位
 		 * @param	boxHeight box的高度，以像素为单位
-		 * @param	isStatic box是否静止不动
 		 * @param	userData box的外观
+		 * @param	isStatic box是否静止不动
 		 * @return b2Body
 		 */
-//	static b2Body* createBox(b2World* world,float posX,float posY,float boxWidth,float boxHeight,bool isStatic);
-//	static b2Body* createBox(b2World* world,float posX,float posY,float boxWidth,float boxHeight,bool isStatic,float angle);
-	static b2Body* createBox(b2World* world,float posX,float posY,float boxWidth,float boxHeight,bool isStatic,void *userData=NULL,
-		float angle=0,float density=1,float friction=0.3f,float restitution=0.0f,b2Filter *filter=NULL,bool isSensor=false);
-	static b2Body* createCircle(b2World *world, float posX, float posY, float radius, bool isStatic=false,void *userData=NULL
-		,float density=10,float friction=0.3f,float restitution=0.0f,bool isRotation=false,b2Filter *filter=NULL,bool isSensor=false);
+	static b2Body* createBox(b2World* world,float posX,float posY,float boxWidth,float boxHeight,void *userData=NULL
+		,b2Filter *filter=NULL,bool isSensor=false);
+	static b2Body* createStaticBox(b2World* world,float posX,float posY,float boxWidth,float boxHeight,void *userData=NULL
+		,b2Filter *filter=NULL,bool isSensor=false);
+
+	static b2Body* createCircle(b2World *world, float posX, float posY, float radius,void *userData=NULL
+		,b2Filter *filter=NULL,bool isSensor=false);
+	
+	static b2Body* createStaticCircle(b2World *world, float posX, float posY, float radius,void *userData=NULL
+		,b2Filter *filter=NULL,bool isSensor=false);
 	static void shrinkBox(b2Body* body,float32 width,float32 height,float32 scale);
 
+	static void createFixture(b2Body* body,float posX,float posY,float );
 	static void createWrapWall(b2World* world);//创建四周边界墙
 
 };

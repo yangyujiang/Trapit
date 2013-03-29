@@ -19,7 +19,7 @@ bool GameInsectView::init(GameViewDelegate* pViewDelegate,GameInsectModel* gameI
 		// 先调用超类的init方法
         CC_BREAK_IF(! CCLayer::init());
 		
-		CCLabelTTF *label = CCLabelTTF::create("Hello World from view", "Marker Felt", 48);
+		CCLabelTTF *label = CCLabelTTF::create("Hello World from Trapit", "Marker Felt", 48);
         // 获取窗体的尺寸
         CCSize size = CCDirector::sharedDirector()->getWinSize();
         label->setPosition(ccp(size.width/2, size.height/2));
@@ -49,7 +49,11 @@ void GameInsectView::update(float dt){
 
 	_insect->setPosition(_insectModel->getCenterPoint());
 	_insect->setRotation(_insectModel->getRotation()+90);
-	//_insect->setRotation(90);
+	if(!_insectModel->getAlive()){
+		this->stopAllActions();
+		_insect->stopAllActions();
+		this->removeChild(_insect,true);
+	}
 //	CCLog("%f,%f",_insect->getPosition().x,_insect->getPosition().y);
 }
 
@@ -61,7 +65,8 @@ void GameInsectView::testModelDelegate(){
 
 void GameInsectView::initAnimation(){
 	animation=CCAnimation::create();
-	char* imageNames[]={"ant_0.png","ant_1.png","ant_2.png","ant_3.png"};
+	//char* imageNames[]={"ant_0.png","ant_1.png","ant_2.png","ant_3.png"};
+	char* imageNames[]={"mantis_1.png","mantis_2.png","mantis_3.png","mantis_4.png"};
 	for(int i=0;i<4;i++){
 		CCTexture2D *texture=CCTextureCache::sharedTextureCache()->addImage(imageNames[i]);
 		CCSpriteFrame *frame=CCSpriteFrame::createWithTexture(texture,CCRectMake(0,0,texture->getPixelsWide(),texture->getPixelsHigh())); 

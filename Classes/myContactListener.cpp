@@ -70,7 +70,6 @@ void myContactListener::BeginContact(b2Contact* contact){
 		//虫子边界检测
 		GameInsectModel *insect;
 		if(getInsect(contact,insect)){
-		CCLog("start contact-----------------------------------");
 			insect->beginContact();
 		}
 		//虫子与树脂球碰撞检测
@@ -78,6 +77,7 @@ void myContactListener::BeginContact(b2Contact* contact){
 		if(getResinBallAndInsect(contact,resinBall,insect)){
 			//检测到树脂球与虫子有重叠
 			resinBall->beginContact(insect);
+		CCLog("start contact-----------------------------------");
 		}
 }
 
@@ -86,7 +86,6 @@ void myContactListener::EndContact(b2Contact* contact){
 		//虫子与边界碰撞检测
 		GameInsectModel *insect;
 		if(getInsect(contact,insect)){
-		CCLog("end contact--------------------------------------");
 			insect->endContact();
 		}
 
@@ -95,5 +94,6 @@ void myContactListener::EndContact(b2Contact* contact){
 		if(getResinBallAndInsect(contact,resinBall,insect)){
 			//检测到树脂球与虫子有重叠
 			resinBall->endContact();
+		CCLog("end contact--------------------------------------");
 		}
 }

@@ -32,7 +32,7 @@ b2Joint* createRevoluteJoint(b2World* world,b2Body* body1,b2Body* body2,b2Vec2 a
 
 
 GameResinBallModel::GameResinBallModel():_ballBody(NULL),_world(NULL)
-	,_currentBlockHeight(0),_currentBlockWidth(0),attack(50)
+	,_currentBlockHeight(0),_currentBlockWidth(0),attack(10)
 	,coveredInsect(NULL)
 {
 }
@@ -56,7 +56,10 @@ void GameResinBallModel::initBallBody(float32 radius){
 	filter.groupIndex=k_resinBallBodyGroup;
 	filter.categoryBits=k_resinBallRealCategory;
 	filter.maskBits=k_resinBallRealMask;
-	_ballBody=B2EasyBox2D::createCircle(_world,centerX,centerY,radius,false,NULL,10.0f,0.8f,0.8,false,&filter);
+	_ballBody=B2EasyBox2D::createCircle(_world,centerX,centerY,radius,this,&filter);
+	b2Fixture* fixture=_ballBody->GetFixtureList();
+	fixture->SetRestitution(0);
+	_ballBody->SetFixedRotation(true);
 	
 	//´´½¨Ò»¸ösensorFixture, ÓÃÀ´Óë³æ×Ó¼ì²â¿ÉÖØµþµÄÅö×²
 	b2CircleShape sensorShape;
@@ -85,7 +88,8 @@ bool GameResinBallModel::init(b2World* world){
 		const float32 magnification=1.35f;//»·ÐÎÁ´°ë¾¶±ÈÔ²Ô²»·µÄ·Å´ó±¶Êý
 		this->createCircleBridge(20,magnification*20);
 
-		this->schedule(schedule_selector(GameResinBallModel::update));
+		//this->setPosition(ccp(10,0));
+		//this->schedule(schedule_selector(GameResinBallModel::update));
 
 		pRet=true;
 	}while(0);
@@ -93,7 +97,7 @@ bool GameResinBallModel::init(b2World* world){
 }
 void GameResinBallModel::myDraw(){
 	CCPoint filledVertives[100];//={ccp(100,100),ccp(500,100),ccp(500,500),ccp(250,250),ccp(100,500)};
-	for(int i=0;i<_blockJoints.size();i++){
+	for(unsigned int i=0;i<_blockJoints.size();i++){
 		filledVertives[i]=ccp(this->_blockJoints[i]->GetAnchorA().x*PTM_RATIO,
 			this->_blockJoints[i]->GetAnchorA().y*PTM_RATIO);
 	}
@@ -132,7 +136,9 @@ void GameResinBallModel::createCircleBridge(int number,float32 radius){//¸ù¾ÝÔ²»
 	filter.categoryBits=k_blocksCategory;
 	filter.maskBits=k_blocksMask;
 
-	b2Body *firstBody=B2EasyBox2D::createBox(_world,bx,by,segmentWidth,segmentHeight,false,NULL,angle,1.0f,1.f,0.0f);
+	b2Body *firstBody=B2EasyBox2D::createBox(_world,bx,by,segmentWidth,segmentHeight,NULL,&filter);
+	firstBody->SetTransform(firstBody->GetWorldCenter(),angle);
+	firstBody->GetFixtureList()->SetRestitution(0);
 	_blocks.push_back(firstBody);//´æÈë_blocksÊý×éÖÐ
 
 	b2Body *body;//µ±Ç°body
@@ -146,8 +152,9 @@ void GameResinBallModel::createCircleBridge(int number,float32 radius){//¸ù¾ÝÔ²»
 		float by = r_small * sin(angle)+getPositionY();
 
 		//´´½¨ÓÐ·½ÏòµÄ¾ØÐÎ¸ÕÌå£¬ºÏ³É×ÜµÄÔ²ÐÎ¸ÕÌå
-		body=B2EasyBox2D::createBox(_world,bx,by,segmentWidth,segmentHeight,false,NULL,angle,1.0f,1.f,0.0f,&filter);
-		//body->SetBullet(true);
+		body=B2EasyBox2D::createBox(_world,bx,by,segmentWidth,segmentHeight,NULL,&filter);
+		body->SetTransform(body->GetWorldCenter(),angle);//ÉèÖÃ½Ç¶È
+		body->GetFixtureList()->SetRestitution(0);
 		_blocks.push_back(body);//´æÈë_blocksÊý×éÖÐ
 		//¶¨Òå½Úµã£¬Á½Ð¡·½¿éÏà½»´¦µã×ø±êµÄ¹«Ê½Îª£¨r*cos(0.5*2*pi/n+k*2*pi/n),r*sin(0.5*2*pi/n+k*2*pi/n)£©+centerXY
 		b2Vec2 anchor=b2Vec2((radius*cos((2*i-1)*alta)+getPositionX())/PTM_RATIO,(radius*sin((2*i-1)*alta)+getPositionY())/PTM_RATIO);		
@@ -185,7 +192,7 @@ void GameResinBallModel::accelerateCallBack(CCAcceleration* pAccelerationValue){
 	}
 	
 	//Ã¿¸öÐ¡·½¿éµÄÄ¦²ÁÁ¦µÄÄ£Äâ
-	for(int i=0;i<_blocks.size();i++){
+	for(unsigned int i=0;i<_blocks.size();i++){
 		float32 zz=b2Vec2(x,y).Length();
 		float32 F=BLOCK_GRAVITY*zz;//¶¯Á¦
 		float32 f=fabs(BLOCK_FRICTION*BLOCK_GRAVITY*z);//Ä¦²ÁÁ¦
@@ -205,10 +212,10 @@ void GameResinBallModel::accelerateCallBack(CCAcceleration* pAccelerationValue){
 
 
 void GameResinBallModel::shrinkResinBallBody(float32 scale){
-	_ballBody->GetFixtureList()->GetShape()->m_radius=0.1;
+	_ballBody->GetFixtureList()->GetShape()->m_radius=0.1f;
 
 	vector<b2Vec2> anchors;
-	for(int i=0;i<_blocks.size();i++){
+	for(unsigned int i=0;i<_blocks.size();i++){
 	B2EasyBox2D::shrinkBox(_blocks[i],_currentBlockHeight,_currentBlockWidth,0.5f);
 	b2Vec2 currentPosition=_blocks[i]->GetWorldCenter();
 	b2Vec2 center=b2Vec2(getPositionX()/PTM_RATIO,getPositionY()/PTM_RATIO);
@@ -219,7 +226,7 @@ void GameResinBallModel::shrinkResinBallBody(float32 scale){
 		center.y+(_blockJoints[i]->GetAnchorA().y-center.y)*scale);
 	anchors.push_back(position);
 	}
-	for(int i=0;i<_blockJoints.size();i++){
+	for(unsigned int i=0;i<_blockJoints.size();i++){
 		int nexti=i+1;
 		if(nexti==_blockJoints.size()) nexti=0;
 	//	b2Joint* newJoint=createRevoluteJoint(_world,_blocks[i],_blocks[nexti],anchors[i]);
@@ -230,6 +237,7 @@ void GameResinBallModel::shrinkResinBallBody(float32 scale){
 
 void GameResinBallModel::update(float dt){
 	this->setPosition(_ballBody->GetWorldCenter().x*PTM_RATIO,_ballBody->GetWorldCenter().y*PTM_RATIO);
+	//CCLog("ballPos:%f,%f",this->getPositionX(),this->getPositionY());
 	//_delegateBall->SetTransform(_ballBody->GetWorldCenter(),0);
 	
 

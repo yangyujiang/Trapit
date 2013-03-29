@@ -24,7 +24,7 @@ public:
     virtual CCObject* copyWithZone(cocos2d::CCZone* pZone);
     virtual void startWithTarget(cocos2d::CCNode *pTarget);
     virtual void update(float time);
-	CCRandomBy():_moveState(0),_countTime(0),_preChangeTime(0),ODDS(0.8){};
+	CCRandomBy():_moveState(0),_countTime(0),_preChangeTime(0),ODDS(0.8f){};
 	void changeState();
 
 public:

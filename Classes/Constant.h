@@ -3,23 +3,28 @@
 
 #include "cocos2d.h"
 
-#define PTM_RATIO 32.0 //Box2D世界与屏幕坐标的换算比例，1米=32像素点
+#define PTM_RATIO 32.0f //Box2D世界与屏幕坐标的换算比例，1米=32像素点
+#define MAP_SCALE 1.8f //地图与屏幕尺寸的比例
+#define WORLD_SCALE 2.0f //世界与屏幕尺寸的比例
 
 #define k_blocksGroup  2
 #define k_resinBallBodyGroup -2
 #define k_insectGroup 4
 #define k_visualField -4
+#define k_wallGroup 0
 
 #define k_defaultCategory 0x0001
 #define k_blocksCategory 0x0002
 #define k_resinBallRealCategory 0x0004
 #define k_resinBallSensorCategory 0x0010
 #define k_insectCategory 0x0008
+#define k_wallCategory 0x0020
 
 #define k_blocksMask 0x0005
 #define k_resinBallRealMask 0x0003
 #define k_resinBallSensorMask 0x0008
-#define k_insectMask 0x0019
+#define k_insectMask 0x0039
+#define k_wallMask 0x0008
 
 const int TAG_RESINBALL=1;//树脂球
 const int TAG_INSECT=2;//虫子

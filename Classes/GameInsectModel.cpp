@@ -4,8 +4,6 @@
 #include "B2EasyBox2D.h"
 #include "RandomBy.h"
 
-#define PTM_RATIO 32.0
-
 USING_NS_CC;
 
 GameInsectModel::GameInsectModel():_velocity(100),_observerDelegate(NULL),_body(NULL),blood(20)
@@ -29,7 +27,7 @@ bool GameInsectModel::init(b2World* world){
 		filter.groupIndex=k_insectGroup;
 		filter.categoryBits=k_insectCategory;
 		filter.maskBits=k_insectMask;
-		_body=B2EasyBox2D::createBox(world,this->getPositionX(),this->getPositionY(),50,70,false,this,0,1,0.3,1,&filter);
+		_body=B2EasyBox2D::createBox(world,this->getPositionX(),this->getPositionY(),50,70,this,&filter);
 		//this->initVisualField();
 
 		this->setAnchorPoint(ccp(0.5,0.1));//设置虫子的锚点为尾部
@@ -86,24 +84,24 @@ void GameInsectModel::randomPositionAndAngle(){
 		posX=CCRANDOM_0_1()*winSize.width-100;
 		angle=CCRANDOM_0_1()*160+10;
 	}
-	this->setPosition(900,300);
-	//this->setPosition(ccp(posX,posY));
+	//this->setPosition(900,300);
+	this->setPosition(ccp(posX,posY));
 	this->setRotation(angle);
 	CCLog("%f,%f,%f,%f",posX,posY,angle,random);
 }
 
 void GameInsectModel::moveRandom(){
-	float rotateFirstP=0.1;//先实行转圈的概率
+	float rotateFirstP=0.1f;//先实行转圈的概率
 	if(moveState==1){//如果当前运动状态为碰撞，则把运动状态转到正常运动，并且把先转圈的概率提升至0.9
 		moveState=0;
-		rotateFirstP=0.9;
+		rotateFirstP=0.9f;
 	}
 	if(CCRANDOM_0_1()<rotateFirstP){
 		this->moveRotateBy();
 	}
 	else{
 		CCFiniteTimeAction* action;
-		float p=0.1;//下一次先开始旋转的概率
+		float p=0.1f;//下一次先开始旋转的概率
 		CCCallFunc *funCall=CCCallFunc::create(this,callfunc_selector(GameInsectModel::moveRandom));//回调此函数
 		CCActionInterval* randomAction=CCRandomBy::create(10,_velocity);
 		action=CCSequence::create(randomAction,funCall,NULL);
@@ -148,6 +146,7 @@ void GameInsectModel::handleContact(){
 }
 
 void GameInsectModel::update(float dt){
+	if(!isAlive) return;
 	_body->SetAwake(true);
 	_body->SetAngularVelocity(_velocity/PTM_RATIO);
 	//this->setPositionAngleToBox2D(getPositionX(),getPositionY(),getRotation());
@@ -161,12 +160,12 @@ void GameInsectModel::update(float dt){
 }
 void GameInsectModel::draw(){
 	CCSize winSize=CCDirector::sharedDirector()->getWinSize();
-	if(contactStage==0)
+	/*if(contactStage==0)
 		ccDrawSolidRect(ccp(0,0),ccp(50,50),ccc4f(0,255,0,255));//绿色
 	else if(contactStage==1)		
 		ccDrawSolidRect(ccp(0,0),ccp(180,180),ccc4f(255,0,0,255));//红色
 	else if(contactStage==2)
-		ccDrawSolidRect(ccp(0,0),ccp(100,100),ccc4f(0,0,255,255));//蓝色
+		ccDrawSolidRect(ccp(0,0),ccp(100,100),ccc4f(0,0,255,255));//蓝色*/
 }
 
 void GameInsectModel::beginContact(){
@@ -195,7 +194,12 @@ void GameInsectModel::runTuoYuan(){
 
 bool GameInsectModel::attacked(float attack){
 	CCLog("blood:%f",blood);
-	if((blood-=attack)<=0) return true;
+	if(!isAlive) return true;
+	blood-=attack;
+	if(blood<=0){
+		updateInsectState();
+		return true;
+	}
 	else return false;
 }
 
@@ -204,6 +208,9 @@ void GameInsectModel::updateInsectState(){
 		if(blood<=0){
 			isAlive=false;//虫子死去
 			this->stopAllActions();//停掉所有动作
+			
+			CCLog("kaokaokao");
+			_observerDelegate->testModelDelegate();
 		}
 	}
 }
@@ -235,4 +242,7 @@ float GameInsectModel::getVelocity(){
 }
 void GameInsectModel::setVelocity(float velocity){
 	_velocity=velocity;
+}
+bool GameInsectModel::getAlive(){
+	return isAlive;
 }

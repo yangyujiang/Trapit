@@ -4,12 +4,11 @@
 #include "myContactListener.h"
 #include "DrawUtil.h"
 #include "Constant.h"
+#include "VisibleRect.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)   
 #include "vld.h"   
 #endif 
-
-#define PTM_RATIO 32.0
 
 USING_NS_CC;
 
@@ -20,12 +19,7 @@ GamePlayController::GamePlayController():_insectView(NULL),_insectModel(NULL),_w
 
 
 GamePlayController::~GamePlayController()
-{
-	//CC_SAFE_RELEASE_NULL(_insectView);
-	//CC_SAFE_RELEASE_NULL(insectView2);
-	//CC_SAFE_RELEASE_NULL(_insectModel);
-	//CC_SAFE_DELETE(_world);
-	
+{	
 	CC_SAFE_RELEASE_NULL(_resinBallView);
 	CC_SAFE_RELEASE_NULL(_resinBallModel);
 
@@ -33,45 +27,20 @@ GamePlayController::~GamePlayController()
 	_world=NULL;
 }
 
-void GamePlayController::initResinBall(){
+void GamePlayController::initResinBall(){//初始化视图及其模型
 	_resinBallModel=GameResinBallModel::create(_world);
 	_resinBallModel->retain();
-
-	addChild(_resinBallModel,0);
-
+	addChild(_resinBallModel,1);
+	
 	_resinBallView=GameResinBallView::CREATE(this,_resinBallModel);
 	_resinBallView->retain();
 
-	addChild(_resinBallView,0);
+	addChild(_resinBallView,-1);
 
 	_resinBallModel->initObserver(_resinBallView);
 }
-
-bool GamePlayController::init(){
-	bool pRet = false;
-
-    do{
-        // 先调用超类的init方法
-		CC_BREAK_IF(! CCLayer::init());
-		
-		srand(time(NULL));   
-		_world=B2EasyBox2D::createWorld(b2Vec2(0,0));
-		_world->SetAutoClearForces(false);
-		_world->SetAllowSleeping(false);
-		B2DebugDrawLayer *dDraw=B2DebugDrawLayer::create(_world,PTM_RATIO);
-		addChild(dDraw,9999);
-
-		myContactListener* contactListener=new myContactListener();
-		_world->SetContactListener(contactListener);
-
-		this->setAccelerometerEnabled(true);//设置允许重力感应
-
-		this->initResinBall();
-		this->createWrapWall();//创建四周墙和一些静态障碍
-
-		view = GamePlayView::create();
-        this->addChild(view, 0);
-
+void GamePlayController::initInsect(){
+	
 		_insectModel=GameInsectModel::create(_world);
 		_insectModel->retain();
 		addChild(_insectModel,0);
@@ -84,18 +53,6 @@ bool GamePlayController::init(){
 		
 		_insectModel->initObserver(_insectView1);
 		
-		/*GameInsectModel* insectModel2=GameInsectModel::create(_world);
-		insectModel2->retain();
-		insectModel2->autorelease();
-		addChild(insectModel2,0);
-
-		insectView2=GameInsectView::CREATE(this,insectModel2);
-		insectView2->retain();
-		addChild(insectView2);
-		
-		insectModel2->initObserver(insectView2);
-
-
 		for(int i=0;i<5;i++){
 			GameInsectModel* insectm=GameInsectModel::create(_world);
 			insectm->retain();
@@ -108,7 +65,39 @@ bool GamePlayController::init(){
 			addChild(insectv,0);
 
 			insectm->initObserver(insectv);
-		}*/
+			_insects.push_back(insectm);
+		}
+}
+
+bool GamePlayController::init(){
+	bool pRet = false;
+
+    do{
+        // 先调用超类的init方法
+		CC_BREAK_IF(! CCLayer::init());
+
+		srand(time(NULL));//给随机数设置种子
+		_world=B2EasyBox2D::createWorld(b2Vec2(0,0));
+		_world->SetAutoClearForces(false);
+		_world->SetAllowSleeping(true);//设置世界是否允许睡眠
+		B2DebugDrawLayer *dDraw=B2DebugDrawLayer::create(_world,PTM_RATIO);
+		addChild(dDraw,9999);
+
+		myContactListener* contactListener=new myContactListener();
+		_world->SetContactListener(contactListener);//碰撞检测监听
+
+		this->setAccelerometerEnabled(true);//设置允许重力感应
+
+		this->initResinBall();//初始化树脂球模型及视图
+		this->createWrapWall();//创建四周墙和一些静态障碍
+		this->initInsect();
+
+		buttonLayer=StaticLayer::create();//初始化按钮层
+		addChild(buttonLayer,10);
+		mapLayer=MapLayer::create();
+		addChild(mapLayer,-10);//初始化地图层
+		//view = GamePlayView::create();
+      
 		this->schedule(schedule_selector(GamePlayController::update));
 
         pRet = true;
@@ -121,13 +110,22 @@ bool GamePlayController::init(){
 	 CCNode* userDataWall=CCNode::create();
 	 userDataWall->setTag(TAG_WALL);
 	 userDataWall=NULL;
+	 
+	 b2Body* wall=B2EasyBox2D::createStaticBox(_world,winSize.width/2,winSize.height+(MAP_SCALE-1)*0.5f*winSize.height
+		 ,winSize.width*MAP_SCALE,PTM_RATIO);//上
 
-	B2EasyBox2D::createBox(_world,winSize.width/2,winSize.height,winSize.width,PTM_RATIO,true,userDataWall,0,0,0.5);
-	B2EasyBox2D::createBox(_world,0,winSize.height/2,PTM_RATIO,winSize.height,true,userDataWall,0,1,0.5);
-	B2EasyBox2D::createBox(_world,winSize.width,winSize.height/2,PTM_RATIO,winSize.height,true,userDataWall,0,0,0.5);
-	b2Body* body=B2EasyBox2D::createBox(_world,winSize.width/2,0,winSize.width,PTM_RATIO,true,userDataWall,0,0,0.5);
-	CCLog("%d,%d,%d,%d",body->GetFixtureList()->GetFilterData().groupIndex,body->GetFixtureList()->GetFilterData().categoryBits,
-		body->GetFixtureList()->GetFilterData().maskBits,body->GetFixtureList()->IsSensor());
+	 b2Filter filter;
+
+	 b2FixtureDef fixDef;
+	 fixDef.filter;
+
+	 B2EasyBox2D::createStaticBox(_world,-(MAP_SCALE-1)*0.5f*winSize.width,winSize.height/2,
+		 PTM_RATIO,winSize.height*MAP_SCALE);//左
+	 B2EasyBox2D::createStaticBox(_world,winSize.width+(MAP_SCALE-1)*0.5f*winSize.width,winSize.height/2,
+		 PTM_RATIO,winSize.height*MAP_SCALE);//右
+	 B2EasyBox2D::createStaticBox(_world,winSize.width/2,-(MAP_SCALE-1)*0.5f*winSize.height,
+		 winSize.width*MAP_SCALE,PTM_RATIO);//下
+	
 	//创建静态障碍物
 	//B2EasyBox2D::createBox(_world,100,100,50,150,true,userDataWall,0,0,0);
 //	B2EasyBox2D::createBox(_world,600,100,50,50,true,userDataWall,0,0,0);
@@ -136,13 +134,13 @@ bool GamePlayController::init(){
 }
 void GamePlayController::draw(){
 	 CCSize winSize=CCDirector::sharedDirector()->getWinSize();
-	ccDrawSolidRect(ccp(0,0),ccp(PTM_RATIO/2,winSize.height),ccc4f(0,255,0,255));
+	/*ccDrawSolidRect(ccp(0,0),ccp(PTM_RATIO/2,winSize.height),ccc4f(0,255,0,255));
 	ccDrawSolidRect(ccp(0,0),ccp(winSize.width,PTM_RATIO/2),ccc4f(0,255,0,255));
 	ccDrawSolidRect(ccp(winSize.width-PTM_RATIO/2,0),ccp(winSize.width,winSize.height),ccc4f(0,255,0,255));
 	ccDrawSolidRect(ccp(0,winSize.height-PTM_RATIO/2),ccp(winSize.width,winSize.height),ccc4f(0,255,0,255));
-	_resinBallModel->myDraw();
+	*/_resinBallModel->myDraw();
 
-	for(int i=0;i<bodys.size();i++){
+	for(unsigned int i=0;i<bodys.size();i++){
 		DrawUtil::drawSolidCircle(ccp(bodys[i]->GetWorldCenter().x*PTM_RATIO,bodys[i]->GetWorldCenter().y*PTM_RATIO),
 		bodys[i]->GetFixtureList()->GetShape()->m_radius*PTM_RATIO,50,ccc4f(0,0,255,255));
 	}
@@ -153,13 +151,12 @@ void GamePlayController::draw(){
 CCScene* GamePlayController::scene(){
     CCScene *scene = NULL;
     do{
-        scene = CCScene::create();
+		scene = CCScene::create();
         CC_BREAK_IF(!scene);
 
         GamePlayController *layer = GamePlayController::create();
         CC_BREAK_IF(!layer);
 
-	
         scene->addChild(layer);
 
     }while(0);
@@ -177,9 +174,12 @@ void GamePlayController::update(float dt){
 	// generally best to keep the time step and iterations fixed.
 //	world->Step(dt, velocityIterations, positionIterations);
 	this->step(dt);
-	for(int i=0;i<_insects.size();i++){
+	for(unsigned int i=0;i<_insects.size();i++){
 		_insects[i]->update(dt);
 	}
+	_resinBallModel->update(dt);
+	buttonLayer->keepStill();
+	mapLayer->updateMap(_resinBallModel->getPosition());//更新地图坐标
 	//Iterate over the bodies in the physics world
 	//CCLog("update:%f",dt);
 
@@ -204,8 +204,15 @@ void GamePlayController::step(float dt){
 	
 }
 void GamePlayController::afterStep(float dt){
-	for(int i=0;i<_insects.size();i++){
-		_insects[i]->handleContact();
+	vector<GameInsectModel* >::iterator it = _insects.begin(); 
+	while (it != _insects.end()) { 
+		GameInsectModel* insect=(GameInsectModel*)*it; //CCLog("%d",insect->getAlive());       
+		if (!insect->getAlive()) { 
+			it = _insects.erase(it);    
+		} else {	
+			insect->handleContact();
+			it++;    
+		}
 	}
 	_resinBallModel->handleContactWithInsect(dt);//给虫子扣血
 }
