@@ -14,7 +14,23 @@
 
 USING_NS_CC;
 
-class GamePlayController :public CCLayer,public GameViewDelegate,public GameResinBallViewDelegate
+
+//AndroidKeyLayer.h
+class AndroidKeyLayer:public CCLayer{
+public :
+	virtual void keyBackClicked()//Android 返回键
+	{
+		CCDirector::sharedDirector()->end();
+		CCLayer::keyBackClicked();
+	}
+	virtual void keyMenuClicked()//Android 菜单键
+	{
+		CCDirector::sharedDirector()->pause();
+		CCLayer::keyMenuClicked();
+	}
+};
+
+class GamePlayController :public GameViewDelegate,public GameResinBallViewDelegate,public AndroidKeyLayer
 {
 protected:
 	b2MouseJoint *_mouseJoint;//调试用，鼠标关节
@@ -47,6 +63,17 @@ public:
 	vector<b2Body*> bodys; 
 public:
 	static CCScene* scene();
+	/*init后会调用; 若是加了CCTransitionScene后，在过渡场景开始后调用 
+     */  
+	void onEnter();
+	void onEnterTransitionDidFinish();
+	/*onEnter以后将会调用此方法 
+     若使用CCTransitionScene,将会在过渡效果结束以后调用此方法 
+     */  
+	void onExitTransitionDidStart();
+	void onExit();// 节点调用dealloc方法之前将会调用此方法   
+    //如果使用了CCTransitionScene,将会在过渡效果结束以后调用此方法   
+
 
 	void testViewDelegate();
 
@@ -61,5 +88,6 @@ public:
 	void dealWithTouchesMoved(b2Vec2 locationWorld);
 	void dealWithTouchesEnded();
 };
+
 
 #endif //__GAME_PLAY_CONTROLLER_H__

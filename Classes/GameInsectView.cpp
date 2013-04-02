@@ -28,6 +28,7 @@ bool GameInsectView::init(GameViewDelegate* pViewDelegate,GameInsectModel* gameI
 		_insectModel=gameInsect;
 		this->pViewDelegate=pViewDelegate;
 		_insect=CCSprite::create("ant_0.png");
+		_insect->setScale(CCDirector::sharedDirector()->getContentScaleFactor());
 		_insect->retain();
 		update(0);
 		addChild(_insect);
@@ -69,7 +70,8 @@ void GameInsectView::initAnimation(){
 	char* imageNames[]={"mantis_1.png","mantis_2.png","mantis_3.png","mantis_4.png"};
 	for(int i=0;i<4;i++){
 		CCTexture2D *texture=CCTextureCache::sharedTextureCache()->addImage(imageNames[i]);
-		CCSpriteFrame *frame=CCSpriteFrame::createWithTexture(texture,CCRectMake(0,0,texture->getPixelsWide(),texture->getPixelsHigh())); 
+		CCSpriteFrame *frame=CCSpriteFrame::createWithTexture(texture,
+			CCRectMake(0,0,texture->getContentSize().width,texture->getContentSize().height));//>getPixelsWide(),texture->getPixelsHigh())); 
 		animation->addSpriteFrame(frame);
 	}
 }

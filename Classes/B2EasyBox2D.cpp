@@ -85,7 +85,6 @@ b2Body* B2EasyBox2D::createBox(b2World* world,float posX,float posY,float boxWid
 	bodyRequest.type=b2_dynamicBody;
 	bodyRequest.position.Set(posX/PTM_RATIO,posY/PTM_RATIO);
 	bodyRequest.userData = userData;
-	
 	b2Body *body=world->CreateBody(&bodyRequest);
 
 	b2PolygonShape shapeRequest;

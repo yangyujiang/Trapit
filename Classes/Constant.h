@@ -26,6 +26,7 @@
 #define k_insectMask 0x0039
 #define k_wallMask 0x0008
 
+
 const int TAG_RESINBALL=1;//树脂球
 const int TAG_INSECT=2;//虫子
 const int TAG_WALL=4;//墙
@@ -39,18 +40,28 @@ const int TAG_ROTATERANDOM=12;//旋转并重新随机运动
 
 
 
-const float32 FIXED_TIMESTEP = 1.0f / 60.0f;
+const float FIXED_TIMESTEP = 1.0f / 60.0f;
 
 // Minimum remaining time to avoid box2d unstability caused by very small delta times
 // if remaining time to simulate is smaller than this, the rest of time will be added to the last step,
 // instead of performing one more single step with only the small delta time.
-const float32 MINIMUM_TIMESTEP = 1.0f / 300.0f;  
+const float MINIMUM_TIMESTEP = 1.0f / 300.0f;  
 
-const int32 VELOCITY_ITERATIONS = 8;
-const int32 POSITION_ITERATIONS = 8;
+const int VELOCITY_ITERATIONS = 8;
+const int POSITION_ITERATIONS = 8;
 
 // maximum number of steps per tick to avoid spiral of death
-const int32 MAXIMUM_NUMBER_OF_STEPS = 25;
+const int MAXIMUM_NUMBER_OF_STEPS = 25;
+class Constant{
+};
+class InnerStage{//内边界结构体
+public:
+		float top;
+		float bottom;
+		float left;
+		float right;//与屏幕右边界的距离（像素）
+};
+
 
 
 #endif //__CONSTANT_H__

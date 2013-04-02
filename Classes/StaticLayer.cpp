@@ -48,16 +48,22 @@ bool StaticLayer::init(){
 
 	return pRet;
 }
+void StaticLayer::draw(){
+	ccDrawLine(ccpAdd(VisibleRect::leftBottom(),ccp(innerStage.left,innerStage.top)),
+		ccpAdd(VisibleRect::leftBottom(),ccp(innerStage.right,innerStage.top)));
+	ccDrawLine(ccpAdd(VisibleRect::leftBottom(),ccp(innerStage.left,innerStage.bottom)),
+		ccpAdd(VisibleRect::leftBottom(),ccp(innerStage.right,innerStage.bottom)));
+	ccDrawLine(ccpAdd(VisibleRect::leftBottom(),ccp(innerStage.left,innerStage.top)),
+		ccpAdd(VisibleRect::leftBottom(),ccp(innerStage.left,innerStage.bottom)));
+	ccDrawLine(ccpAdd(VisibleRect::leftBottom(),ccp(innerStage.right,innerStage.top)),
+		ccpAdd(VisibleRect::leftBottom(),ccp(innerStage.right,innerStage.bottom)));
+}
 
-
-void StaticLayer::keepStill(){
+void StaticLayer::keepStill(CCPoint lastPos){
 	CCScene* scene=CCDirector::sharedDirector()->getRunningScene();
 	CCPoint scenePos=scene->getPosition();
-	pCloseItem->setPosition(ccpSub(ccpSub(VisibleRect::rightBottom(),ccp(pCloseItem->getContentSize().width,-pCloseItem->getContentSize().height))
-		,scenePos));
-
-	pPauseItem->setPosition(ccpSub(ccp(VisibleRect::bottom().x-pPauseItem->getContentSize().width/2,
-			VisibleRect::bottom().y+pPauseItem->getContentSize().height/2),scenePos));
+	CCPoint delta=ccpSub(scenePos,lastPos);
+	this->setPosition(ccpSub(this->getPosition(),delta));
 }
 
 void StaticLayer::menuCloseCallback(CCObject* pSender)

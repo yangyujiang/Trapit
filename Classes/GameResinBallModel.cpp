@@ -8,7 +8,7 @@ USING_NS_CC;
 const float32 LIMIT_ANGLE=CC_DEGREES_TO_RADIANS(30);//ÏÞÖÆÐý×ª¹Ø½ÚµÄÐý×ª½Ç¶È
 const float32 BALL_FRICTION=0.1f;//ÊµÐÄÇòÓëµØÃæµÄÄ¦²ÁÏµÊý
 const float32 BALL_GRAVITY=150;//ÊµÐÄÇòÖØÁ¦£¨N£©,¹Ì¶¨²»±ä
-const float32 BLOCK_FRICTION=0.6f;//Ã¿Ò»¸öÐ¡·½¿éÓëµØÃæµÄÄ¦²ÁÏµÊý
+const float32 BLOCK_FRICTION=2.f;//0.6f;//Ã¿Ò»¸öÐ¡·½¿éÓëµØÃæµÄÄ¦²ÁÏµÊý
 const float32 BLOCK_GRAVITY=0.8f;//Ã¿Ò»¸öÐ¡·½¿éµÄÖØÁ¦£¨N£©£¬¹Ì¶¨²»±ä
 const float32 g=10;//Ä£ÄâÖØÁ¦ÏµÊý
 const float32 MAX_VELOCITY=18;//Ö÷½ÇÊ÷Ö¬ÇòµÄ×î´óËÙ¶È£¨Ã×/Ãë£©
@@ -30,10 +30,12 @@ b2Joint* createRevoluteJoint(b2World* world,b2Body* body1,b2Body* body2,b2Vec2 a
 		return world->CreateJoint(&revoluteJoint);
 }
 
-
+//
+//GameResinBallModel.cpp
+//
 GameResinBallModel::GameResinBallModel():_ballBody(NULL),_world(NULL)
 	,_currentBlockHeight(0),_currentBlockWidth(0),attack(10)
-	,coveredInsect(NULL)
+	,coveredInsect(NULL),lastPosition(ccp(0,0)),_radius(0)
 {
 }
 
@@ -50,6 +52,7 @@ void GameResinBallModel::initBallBody(float32 radius){
 	float centerX = winSize.width / 2.f;
 	float centerY = winSize.height / 2.f;
 	this->setPosition(centerX,centerY);
+	lastPosition=this->getPosition();
 //	CCLog("resinBallBody:%f,%f",centerX,centerY);
 
 	b2Filter filter;
@@ -83,10 +86,14 @@ bool GameResinBallModel::init(b2World* world){
 	do{
 		_world=world;
 		this->setTag(TAG_RESINBALL);
-		this->initBallBody(20);//°ë¾¶
+		_ballRadius=30;
+		float factor=CCDirector::sharedDirector()->getContentScaleFactor();
+		//_ballRadius*=factor;
+		this->initBallBody(_ballRadius);//°ë¾¶
 
 		const float32 magnification=1.35f;//»·ÐÎÁ´°ë¾¶±ÈÔ²Ô²»·µÄ·Å´ó±¶Êý
-		this->createCircleBridge(20,magnification*20);
+		_radius=magnification*_ballRadius;
+		this->createCircleBridge(20,_radius);
 
 		//this->setPosition(ccp(10,0));
 		//this->schedule(schedule_selector(GameResinBallModel::update));
@@ -102,8 +109,7 @@ void GameResinBallModel::myDraw(){
 			this->_blockJoints[i]->GetAnchorA().y*PTM_RATIO);
 	}
 	
- 	ccDrawSolidPoly(filledVertives,this->_blockJoints.size(),ccc4f(255,165,0,255));
-	
+ 	ccDrawSolidPoly(filledVertives,this->_blockJoints.size(),ccc4f(255,165,0,100));
 	ccDrawColor4B(255,69,0,255);
 	b2Body *ballBody=_ballBody;
 	ccDrawCircle(ccp(ballBody->GetWorldCenter().x*PTM_RATIO,ballBody->GetWorldCenter().y*PTM_RATIO),
@@ -112,6 +118,9 @@ void GameResinBallModel::myDraw(){
 	DrawUtil::drawSolidCircle(ccp(ballBody->GetWorldCenter().x*PTM_RATIO,ballBody->GetWorldCenter().y*PTM_RATIO),
 		ballBody->GetFixtureList()->GetShape()->m_radius*PTM_RATIO,50,ccc4f(255,0,0,1));
 
+		for(unsigned int i=0;i<_blocks.size();i++){
+//ccDrawSolidRect(ccp(0,0),ccp(50,50),ccc4f(0,255,0,255));//ÂÌÉ«
+		}
 	//DrawUtil::drawSolidCircle(ccp(ballBody->GetWorldCenter().x*PTM_RATIO,ballBody->GetWorldCenter().y*PTM_RATIO),
 		//(ballBody->GetFixtureList()->GetShape()->m_radius*0.8)*PTM_RATIO,50,ccc4f(255,65,0,1));
 	
@@ -136,7 +145,15 @@ void GameResinBallModel::createCircleBridge(int number,float32 radius){//¸ù¾ÝÔ²»
 	filter.categoryBits=k_blocksCategory;
 	filter.maskBits=k_blocksMask;
 
-	b2Body *firstBody=B2EasyBox2D::createBox(_world,bx,by,segmentWidth,segmentHeight,NULL,&filter);
+	CCTexture2D *texture=CCTextureCache::sharedTextureCache()->addImage("amber_wai.png");
+	CCSprite* block=CCSprite::createWithTexture(texture,CCRectMake(0,0,_currentBlockWidth,_currentBlockHeight));
+	block->setPosition(ccpSub(ccp(bx,by),this->getPosition()));
+	block->setRotation(-angle*180/M_PI);
+	//CCLog("sprite:%f,%f",block->getPositionX(),block->getPositionY());
+	//CCLog("CCNode:%f,%f",this->getPositionX(),this->getPositionY());
+	addChild(block,10);
+
+	b2Body *firstBody=B2EasyBox2D::createBox(_world,bx,by,segmentWidth,segmentHeight,block,&filter);
 	firstBody->SetTransform(firstBody->GetWorldCenter(),angle);
 	firstBody->GetFixtureList()->SetRestitution(0);
 	_blocks.push_back(firstBody);//´æÈë_blocksÊý×éÖÐ
@@ -152,7 +169,11 @@ void GameResinBallModel::createCircleBridge(int number,float32 radius){//¸ù¾ÝÔ²»
 		float by = r_small * sin(angle)+getPositionY();
 
 		//´´½¨ÓÐ·½ÏòµÄ¾ØÐÎ¸ÕÌå£¬ºÏ³É×ÜµÄÔ²ÐÎ¸ÕÌå
-		body=B2EasyBox2D::createBox(_world,bx,by,segmentWidth,segmentHeight,NULL,&filter);
+	CCSprite* block=CCSprite::createWithTexture(texture,CCRectMake(0,0,_currentBlockWidth,_currentBlockHeight));
+	block->setPosition(ccpSub(ccp(bx,by),this->getPosition()));
+	block->setRotation(-angle*180/M_PI);
+	addChild(block,10);
+		body=B2EasyBox2D::createBox(_world,bx,by,segmentWidth,segmentHeight,block,&filter);
 		body->SetTransform(body->GetWorldCenter(),angle);//ÉèÖÃ½Ç¶È
 		body->GetFixtureList()->SetRestitution(0);
 		_blocks.push_back(body);//´æÈë_blocksÊý×éÖÐ
@@ -236,10 +257,20 @@ void GameResinBallModel::shrinkResinBallBody(float32 scale){
 }
 
 void GameResinBallModel::update(float dt){
+	lastPosition=this->getPosition();
 	this->setPosition(_ballBody->GetWorldCenter().x*PTM_RATIO,_ballBody->GetWorldCenter().y*PTM_RATIO);
 	//CCLog("ballPos:%f,%f",this->getPositionX(),this->getPositionY());
 	//_delegateBall->SetTransform(_ballBody->GetWorldCenter(),0);
 	
+	for(unsigned int i=0;i<_blocks.size();i++){//ÊµÊ±¸üÐÂÎ»ÖÃºÍ½Ç¶È
+		b2Body* body=_blocks[i];
+		if(body->GetUserData()!=NULL){
+			CCNode* userData=(CCNode*)body->GetUserData();
+			userData->setPosition(ccpSub(ccp(body->GetPosition().x*PTM_RATIO,body->GetPosition().y*PTM_RATIO),
+				this->getPosition()));//Òª¼õÈ¥¸¸Ç××ø±ê£¬ÒÔ±ã¸úbox2dÒ»ÖÂ
+			userData->setRotation(-body->GetAngle()*180/M_PI);
+		}
+	}
 
 	if(!_observerDelegate) return;
 
@@ -273,4 +304,14 @@ void GameResinBallModel::handleContactWithInsect(float dt){
 
 b2Body* GameResinBallModel::getBallBody(){
 	return _ballBody;
+}
+
+CCPoint GameResinBallModel::getDeltaPosition(){
+	return ccpSub(this->getPosition(),lastPosition);
+}
+float GameResinBallModel::getRadius(){
+	return _radius;
+}
+float GameResinBallModel::getBallRadius(){
+	return _ballRadius;
 }

@@ -43,7 +43,7 @@ typedef struct tagResource
 
 static Resource smallResource  =  { cocos2d::CCSizeMake(854, 480),   "Android Phone 2" };
 static Resource mediumResource =  { cocos2d::CCSizeMake(1280, 720),  "Android Phone 3"   };
-static Resource largeResource  =  { cocos2d::CCSizeMake(1920, 1080), "Android Phone 3" };
+static Resource largeResource  =  { cocos2d::CCSizeMake(1920, 1080), "Android Phone 4" };
 static cocos2d::CCSize designResolutionSize = cocos2d::CCSizeMake(1280, 720);
 
 #endif  // __APP_DELEGATE_H__

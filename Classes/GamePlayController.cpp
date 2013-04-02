@@ -5,6 +5,7 @@
 #include "DrawUtil.h"
 #include "Constant.h"
 #include "VisibleRect.h"
+#include "cPolySprite.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)   
 #include "vld.h"   
@@ -30,7 +31,7 @@ GamePlayController::~GamePlayController()
 void GamePlayController::initResinBall(){//初始化视图及其模型
 	_resinBallModel=GameResinBallModel::create(_world);
 	_resinBallModel->retain();
-	addChild(_resinBallModel,1);
+	addChild(_resinBallModel,10);
 	
 	_resinBallView=GameResinBallView::CREATE(this,_resinBallModel);
 	_resinBallView->retain();
@@ -81,8 +82,13 @@ bool GamePlayController::init(){
 		_world->SetAutoClearForces(false);
 		_world->SetAllowSleeping(true);//设置世界是否允许睡眠
 		B2DebugDrawLayer *dDraw=B2DebugDrawLayer::create(_world,PTM_RATIO);
-		addChild(dDraw,9999);
-
+		//addChild(dDraw,9999);
+		//CCPoint p[] = {ccp(0, 1.0), ccp(0.3, 0.3), ccp(0.4, 0.4), ccp(0.4, 0.2)};
+		CCPoint p[] = {ccp(0, 0), ccp(0, 1), ccp(1, 1), ccp(1, 0)};
+//int index[] = {0, 1, 3, 0, 2, 3};
+int index[] = {0, 1, 2, 3, 4, 5};
+cPolySprite *csp = cPolySprite::create("HelloWorld.png", p, 4, index);//csp->setPosition(ccp(500,500));
+//addChild(csp,100);
 		myContactListener* contactListener=new myContactListener();
 		_world->SetContactListener(contactListener);//碰撞检测监听
 
@@ -96,13 +102,26 @@ bool GamePlayController::init(){
 		addChild(buttonLayer,10);
 		mapLayer=MapLayer::create();
 		addChild(mapLayer,-10);//初始化地图层
+		buttonLayer->innerStage=mapLayer->innerStage;//调试用
 		//view = GamePlayView::create();
-      
-		this->schedule(schedule_selector(GamePlayController::update));
 
         pRet = true;
     }while(0);
     return pRet;
+}
+void GamePlayController::onEnter(){
+	this->schedule(schedule_selector(GamePlayController::update));
+
+	CCLayer::onEnter();
+}
+void GamePlayController::onEnterTransitionDidFinish(){
+	CCLayer::onEnterTransitionDidFinish();
+}
+void GamePlayController::onExitTransitionDidStart(){
+	CCLayer::onExitTransitionDidStart();
+}
+void GamePlayController::onExit(){
+	CCLayer::onExit();
 }
  void GamePlayController::createWrapWall(){
 	 CCSize winSize=CCDirector::sharedDirector()->getWinSize();
@@ -133,17 +152,19 @@ bool GamePlayController::init(){
 	//bodys.push_back(B2EasyBox2D::createCircle(_world,500,500,50,true,userDataWall,0,0,0));
 }
 void GamePlayController::draw(){
+
 	 CCSize winSize=CCDirector::sharedDirector()->getWinSize();
 	/*ccDrawSolidRect(ccp(0,0),ccp(PTM_RATIO/2,winSize.height),ccc4f(0,255,0,255));
 	ccDrawSolidRect(ccp(0,0),ccp(winSize.width,PTM_RATIO/2),ccc4f(0,255,0,255));
 	ccDrawSolidRect(ccp(winSize.width-PTM_RATIO/2,0),ccp(winSize.width,winSize.height),ccc4f(0,255,0,255));
 	ccDrawSolidRect(ccp(0,winSize.height-PTM_RATIO/2),ccp(winSize.width,winSize.height),ccc4f(0,255,0,255));
-	*/_resinBallModel->myDraw();
+	*/
+	 /*_resinBallModel->myDraw();
 
 	for(unsigned int i=0;i<bodys.size();i++){
 		DrawUtil::drawSolidCircle(ccp(bodys[i]->GetWorldCenter().x*PTM_RATIO,bodys[i]->GetWorldCenter().y*PTM_RATIO),
 		bodys[i]->GetFixtureList()->GetShape()->m_radius*PTM_RATIO,50,ccc4f(0,0,255,255));
-	}
+	}*/
 	//ccDrawSolidRect(ccp(75,25),ccp(125,175),ccc4f(0,255,0,255));
 	//ccDrawSolidRect(ccp(575,75),ccp(625,125),ccc4f(0,255,0,255));
 }
@@ -178,8 +199,12 @@ void GamePlayController::update(float dt){
 		_insects[i]->update(dt);
 	}
 	_resinBallModel->update(dt);
-	buttonLayer->keepStill();
+	//buttonLayer->keepStill();
+	CCScene* scene=CCDirector::sharedDirector()->getRunningScene();
+	CCPoint last=scene->getPosition();
+	mapLayer->updateFloor(_resinBallModel->getDeltaPosition());
 	mapLayer->updateMap(_resinBallModel->getPosition());//更新地图坐标
+	buttonLayer->keepStill(last);
 	//Iterate over the bodies in the physics world
 	//CCLog("update:%f",dt);
 
@@ -259,3 +284,6 @@ void GamePlayController::dealWithTouchesEnded(){
 		_mouseJoint = NULL;
 	}
 }
+
+
+

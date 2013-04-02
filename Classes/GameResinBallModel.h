@@ -21,7 +21,9 @@ protected:
 	//cocos2d::CCPoint _position;//物体所在位置,即实心圆的圆心坐标，单位像素,即为此Node位置,故不需再定义
 	float32 _currentBlockHeight;//小方块长度
 	float32 _currentBlockWidth;//当前小方块宽度
-	float32 _radius;//外围半径
+	CC_PROPERTY_READONLY(float32,_radius,Radius);//外围半径
+	CC_PROPERTY_READONLY(float,_ballRadius,BallRadius);//实心球半径
+	CCPoint lastPosition;//上一帧的位置
 
 	b2Fixture* _sensorBall;//代表树脂球与虫子的碰撞
 protected:
@@ -44,6 +46,7 @@ public:
 	void accelerateCallBack(cocos2d::CCAcceleration* pAccelerationValue);//加速器变化时（倾斜手机屏幕）的回调函数
 
 	void update(float dt);
+	CCPoint getDeltaPosition();//两次位置变化的偏移
 
 	void initObserver(GameModelDelegate* pDelegate);//初始化观察者，一般为与Model对应的View
 

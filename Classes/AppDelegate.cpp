@@ -3,6 +3,12 @@
 #include "AppDelegate.h"
 #include "SimpleAudioEngine.h"
 #include "GamePlayController.h"
+#include "GameMenuController.h"
+#include "GameLevelController.h"
+#include "SmartRes.h"
+#include "TableViewTestScene.h"
+#include "HelloWorldScene.h"
+#include "GalleryLayer.h"
 
 using namespace CocosDenshion;
 
@@ -24,7 +30,9 @@ bool AppDelegate::applicationDidFinishLaunching()
     CCEGLView* pEGLView = CCEGLView::sharedOpenGLView();
 
     pDirector->setOpenGLView(pEGLView);
-
+	/*CCFileUtils::sharedFileUtils()->setResourceDirectory("hd");
+    SmartRes::sharedRes()->setVirtualScreenWidth(960);
+	*/
     // Set the design resolution
     pEGLView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, kResolutionNoBorder);
     CCSize frameSize = pEGLView->getFrameSize();
@@ -53,7 +61,7 @@ bool AppDelegate::applicationDidFinishLaunching()
         pDirector->setContentScaleFactor(smallResource.size.height/designResolutionSize.height);
     }
 
-
+	
 
     // turn on display FPS
     pDirector->setDisplayStats(true);
@@ -62,8 +70,13 @@ bool AppDelegate::applicationDidFinishLaunching()
     pDirector->setAnimationInterval(1.0 / 60);
 
     // create a scene. it's an autorelease object
-    CCScene *pScene = GamePlayController::scene();
-
+    //CCScene *pScene = GamePlayController::scene();
+	CCScene *pScene = GameMenuController::scene();
+    //CCScene *pScene = GameLevelController::scene();
+	//CCScene *pScene = TableViewTestLayer::scene();
+	/*CCScene *pScene = CCScene::create();
+	CCLayer *pLayer = GalleryLayer::create();
+	pScene->addChild(pLayer);*/
     // run
     pDirector->runWithScene(pScene);
     return true;

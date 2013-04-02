@@ -193,7 +193,7 @@ void GameInsectModel::runTuoYuan(){
 
 
 bool GameInsectModel::attacked(float attack){
-	CCLog("blood:%f",blood);
+	//CCLog("blood:%f",blood);
 	if(!isAlive) return true;
 	blood-=attack;
 	if(blood<=0){
