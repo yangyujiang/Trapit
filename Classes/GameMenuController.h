@@ -10,9 +10,21 @@
 USING_NS_CC;
 USING_NS_CC_EXT;
 
+const int TAG_LEFT_TABLE=100;
+const int TAG_LEFT_MID_PANEL=101;
+const int TAG_PANEL_COLOR=102;
+const int TAG_SLIDER=103;//滑块
+
 class GameMenuController :public CCLayer
 {
 protected:
+	enum Panel{
+	panel_red=0,
+	panel_yellow,
+	panel_green,
+	panel_blue,
+}curPanel;
+	CCSize winSize;
 	CCScrollView* scrollView;
 	int curPage;//当前页
 	unsigned int space;//空白
@@ -21,6 +33,10 @@ protected:
 	int tableWidth;//左侧面板宽度
 
 	bool isScrolling;//是否滑动
+	bool isMovingMap;//是否在移动地图
+	bool isSliding;//是否正在滑动滑动条，调整浓度
+	int slideStart;//滑动条初始位置
+	int slideEnd;//滑动条最远可滑动
 
 	CCPoint startPoint;//开始点
 public:
@@ -38,9 +54,12 @@ public:
 
 	virtual void update(float dt);
 	
-    void menuGoBackCallback(CCObject* pSender);
-    void menuCollectCallback(CCObject* pSender);
-    void menuClickCallback(CCObject* pSender);
+    void menuGoBackCallback(CCObject* pSender);//点击返回按钮回调
+    void menuCollectCallback(CCObject* pSender);//点击收集按钮回调
+    void menuClickCallback(CCObject* pSender);//点击某地图回调
+    void menuChooseResinCallback(CCObject* pSender);//点击树脂颜色选项卡回调
+    void menuShopCallback(CCObject* pSender);//点击商店按钮回调
+    void menuStartCallback(CCObject* pSender);//点击开始按钮回调
 
 
 	virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
@@ -52,59 +71,12 @@ public:
 
 	void initMapScrollView();//初始化右侧面板
 	void initLeftTable();//初始化左侧面板
+	CCLayer* initLeftTopPanel();//初始化左上栏
+	CCLayer* initLeftMidPanel();//lefttable的中间部分
+	CCMenu* initLeftBottomdPanel();//lefttable的下方部分
 
 public:
 	static CCScene* scene();
 };
-
-//ScrollMenu
-class ScrollMenu:public CCMenu{
-private:
-	virtual void registerWithTouchDispatcher(){
-        //这里优先级设为1，只要比CCScrollView低就可以
-         CCDirector::sharedDirector()->getTouchDispatcher()->addTargetedDelegate(this, 2, true);
-     }
-public:
-	ScrollMenu(){CCMenu();};
-
-	static ScrollMenu* ScrollMenu::create(){
-	    return ScrollMenu::create(NULL, NULL);
-	}
-	
-	static ScrollMenu* ScrollMenu::create(CCMenuItem* item, ...){
-	  va_list args;
-		va_start(args,item);
-		ScrollMenu *pRet = new ScrollMenu();
-		if (pRet && pRet->initWithItems(item, args))
-		{
-		    pRet->autorelease();
-		    va_end(args);
-		    return pRet;
-		}
-		va_end(args);
-		CC_SAFE_DELETE(pRet);
-		return NULL;
-	}
-
-	bool ScrollMenu::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent){ 
-		moved_=false;
-		return CCMenu::ccTouchBegan(pTouch,pEvent);
-	}
-  
-	void ScrollMenu::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent){
-		moved_=true;
-		CCMenu::ccTouchMoved(pTouch,pEvent);
-	}
- 
-	void ScrollMenu::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent){CCLog("end?%d",moved_);
-		if(!moved_){
-			CCMenu::ccTouchEnded(pTouch,pEvent);
-		}else
-			m_eState = kCCMenuStateWaiting;
-	}
-protected:
-	bool moved_;//是否是滑动
-};
-
 
 #endif //__GAME_MENU_CONTROLLER_H__

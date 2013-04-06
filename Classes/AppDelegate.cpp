@@ -4,11 +4,9 @@
 #include "SimpleAudioEngine.h"
 #include "GamePlayController.h"
 #include "GameMenuController.h"
-#include "GameLevelController.h"
+#include "GameWelcomeController.h"
+#include "GameCollectionController.h"
 #include "SmartRes.h"
-#include "TableViewTestScene.h"
-#include "HelloWorldScene.h"
-#include "GalleryLayer.h"
 
 using namespace CocosDenshion;
 
@@ -34,7 +32,7 @@ bool AppDelegate::applicationDidFinishLaunching()
     SmartRes::sharedRes()->setVirtualScreenWidth(960);
 	*/
     // Set the design resolution
-    pEGLView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, kResolutionNoBorder);
+    //pEGLView->setDesignResolutionSize(designResolutionSize.width, designResolutionSize.height, kResolutionNoBorder);
     CCSize frameSize = pEGLView->getFrameSize();
 
     // In this demo, we select resource according to the frame's height.
@@ -72,7 +70,8 @@ bool AppDelegate::applicationDidFinishLaunching()
     // create a scene. it's an autorelease object
     //CCScene *pScene = GamePlayController::scene();
 	CCScene *pScene = GameMenuController::scene();
-    //CCScene *pScene = GameLevelController::scene();
+   // CCScene *pScene = GameWelcomeController::scene();
+	//CCScene *pScene = GameCollectionController::scene();
 	//CCScene *pScene = TableViewTestLayer::scene();
 	/*CCScene *pScene = CCScene::create();
 	CCLayer *pLayer = GalleryLayer::create();

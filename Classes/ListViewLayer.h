@@ -6,7 +6,10 @@
 
 class ListViewLayer : public cocos2d::CCLayer, public cocos2d::extension::CCTableViewDataSource, public cocos2d::extension::CCTableViewDelegate
 {
+protected:
+	CC_PROPERTY_READONLY(unsigned int,_idx,Idx);
 public:
+	ListViewLayer():_idx(0){};
     virtual bool init();  
     
     virtual void scrollViewDidScroll(cocos2d::extension::CCScrollView* view);

@@ -5,14 +5,6 @@
 
 USING_NS_CC;
 
-const float32 LIMIT_ANGLE=CC_DEGREES_TO_RADIANS(30);//限制旋转关节的旋转角度
-const float32 BALL_FRICTION=0.1f;//实心球与地面的摩擦系数
-const float32 BALL_GRAVITY=150;//实心球重力（N）,固定不变
-const float32 BLOCK_FRICTION=2.f;//0.6f;//每一个小方块与地面的摩擦系数
-const float32 BLOCK_GRAVITY=0.8f;//每一个小方块的重力（N），固定不变
-const float32 g=10;//模拟重力系数
-const float32 MAX_VELOCITY=18;//主角树脂球的最大速度（米/秒）
-
 //全局函数
 b2Joint* createRevoluteJoint(b2World* world,b2Body* body1,b2Body* body2,b2Vec2 anchor){//根据两个body和一个节点创建一个旋转关节并返回
 		//定义关节需求
@@ -37,6 +29,11 @@ GameResinBallModel::GameResinBallModel():_ballBody(NULL),_world(NULL)
 	,_currentBlockHeight(0),_currentBlockWidth(0),attack(10)
 	,coveredInsect(NULL),lastPosition(ccp(0,0)),_radius(0)
 {
+  BALL_FRICTION=0.1f;//实心球与地面的摩擦系数
+  BALL_GRAVITY=150;//实心球重力（N）,固定不变
+  BLOCK_FRICTION=2.f;//0.6f;//每一个小方块与地面的摩擦系数
+  BLOCK_GRAVITY=0.8f;//每一个小方块的重力（N），固定不变
+  MAX_VELOCITY=18;//主角树脂球的最大速度（米/秒）
 }
 
 

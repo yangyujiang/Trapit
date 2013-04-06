@@ -99,6 +99,7 @@ cPolySprite *csp = cPolySprite::create("HelloWorld.png", p, 4, index);//csp->set
 		this->initInsect();
 
 		buttonLayer=StaticLayer::create();//初始化按钮层
+		buttonLayer->initControlSlider(_resinBallModel);
 		addChild(buttonLayer,10);
 		mapLayer=MapLayer::create();
 		addChild(mapLayer,-10);//初始化地图层
@@ -110,11 +111,11 @@ cPolySprite *csp = cPolySprite::create("HelloWorld.png", p, 4, index);//csp->set
     return pRet;
 }
 void GamePlayController::onEnter(){
-	this->schedule(schedule_selector(GamePlayController::update));
 
 	CCLayer::onEnter();
 }
 void GamePlayController::onEnterTransitionDidFinish(){
+	this->schedule(schedule_selector(GamePlayController::update));
 	CCLayer::onEnterTransitionDidFinish();
 }
 void GamePlayController::onExitTransitionDidStart(){

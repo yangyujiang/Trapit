@@ -174,8 +174,8 @@ void MapLayer::updateFloor(CCPoint delta){
 //	CCLog("%f,%f",delta.x,delta.y);
 	_floor[0]->setPosition(ccp(_floor[0]->getPositionX()-delta.x,_floor[0]->getPositionY()-delta.y));
 	_floor[1]->setPosition(ccp(_floor[1]->getPositionX()-delta.x,_floor[1]->getPositionY()-delta.y));
-	_floor[2]->setPosition(ccp(_floor[2]->getPositionX()-delta.x,_floor[2]->getPositionY()-delta.y));
-	_floor[3]->setPosition(ccp(_floor[3]->getPositionX()-delta.x,_floor[3]->getPositionY()-delta.y));
+	//_floor[2]->setPosition(ccp(_floor[2]->getPositionX()-delta.x,_floor[2]->getPositionY()-delta.y));
+	//_floor[3]->setPosition(ccp(_floor[3]->getPositionX()-delta.x,_floor[3]->getPositionY()-delta.y));
 }
 
 void MapLayer::updateMap(CCPoint nextPosition){

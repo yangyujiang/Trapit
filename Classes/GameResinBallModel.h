@@ -7,10 +7,26 @@
 #include "GlobalDef.h"
 #include "GameInsectModel.h"
 
+
+const float32 LIMIT_ANGLE=CC_DEGREES_TO_RADIANS(30);//限制旋转关节的旋转角度
+ //float32 BALL_FRICTION=0.1f;//实心球与地面的摩擦系数
+ //float32 BALL_GRAVITY=150;//实心球重力（N）,固定不变
+ //float32 BLOCK_FRICTION=2.f;//0.6f;//每一个小方块与地面的摩擦系数
+ //float32 BLOCK_GRAVITY=0.8f;//每一个小方块的重力（N），固定不变
+const float32 g=10;//模拟重力系数
+ //float32 MAX_VELOCITY=18;//主角树脂球的最大速度（米/秒）
+
 USING_NS_CC;
 //虫子模型类，处理虫子运动等
 class GameResinBallModel :public cocos2d::CCNode
 {
+public:
+	
+ float32 BALL_FRICTION;//实心球与地面的摩擦系数
+ float32 BALL_GRAVITY;//实心球重力（N）,固定不变
+ float32 BLOCK_FRICTION;//0.6f;//每一个小方块与地面的摩擦系数
+ float32 BLOCK_GRAVITY;//每一个小方块的重力（N），固定不变
+ float32 MAX_VELOCITY;//主角树脂球的最大速度（米/秒）
 private:
 	GameModelDelegate* _observerDelegate;//树脂球模型的观察者，一般为树脂球的view对象
 protected:
