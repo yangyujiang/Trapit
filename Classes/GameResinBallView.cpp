@@ -10,8 +10,8 @@ b2Vec2 getLocationWorld(CCSet *touches){//根据鼠标点击获得在Box2D世界的坐标(点击
 	CCPoint location = myTouch->getLocationInView();
 	location = CCDirector::sharedDirector()->convertToGL(location);
 	CCScene* scene=CCDirector::sharedDirector()->getRunningScene();
-	CCLog("touch:%f,%f",location.x,location.y);
-	CCLog("scene:%f,%f",scene->getPosition().x,scene->getPosition().y);
+//	CCLog("touch:%f,%f",location.x,location.y);
+//	CCLog("scene:%f,%f",scene->getPosition().x,scene->getPosition().y);
 	location=ccpSub(location,scene->getPosition());
 	b2Vec2 locationWorld = b2Vec2(location.x/PTM_RATIO, location.y/PTM_RATIO);
 
@@ -55,7 +55,7 @@ bool GameResinBallView::init(GameResinBallViewDelegate* pViewDelegate,GameResinB
 void GameResinBallView::onEnter(){
 	CCLayer::onEnter();	
 	
-	streak = CCMotionStreak::create(2, 3, _ResinBallModel->getRadius()*1.5, ccWHITE, "green.png");
+	streak = CCMotionStreak::create(2, 3, _ResinBallModel->getRadius()*1.5, ccWHITE, "yellow.png");
 	//streak->setScale(0.5);
 	addChild(streak,5);
 	CCActionInterval *colorAction = CCRepeatForever::create((CCActionInterval *)CCSequence::create(
@@ -128,7 +128,7 @@ bool MapLayer::init(){
         CC_BREAK_IF(! CCLayer::init());
 
 		_map=CCSprite::create("map.png");
-		CCLog("factor:%f",CCDirector::sharedDirector()->getContentScaleFactor());
+	//	CCLog("factor:%f",CCDirector::sharedDirector()->getContentScaleFactor());
 		_map->setScale(CCDirector::sharedDirector()->getContentScaleFactor());
 		CC_BREAK_IF(!_map);
 		addChild(_map,-1);
@@ -145,6 +145,7 @@ bool MapLayer::init(){
 		float deltaX=winSize.width*(WORLD_SCALE-1)/2;
 		float deltaY=winSize.height*(WORLD_SCALE-1)/2;
 
+		//地板
 		_floor[0]=CCSprite::create("floor1.png");
 		//_floor[0]->setAnchorPoint(ccp(0,0));
 		_floor[0]->setPosition(ccp(winSize.width/2,-deltaY));//下

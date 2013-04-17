@@ -12,6 +12,7 @@
 #define k_insectGroup 4
 #define k_visualField -4
 #define k_wallGroup 0
+#define k_enemyGroup 8
 
 #define k_defaultCategory 0x0001
 #define k_blocksCategory 0x0002
@@ -19,17 +20,20 @@
 #define k_resinBallSensorCategory 0x0010
 #define k_insectCategory 0x0008
 #define k_wallCategory 0x0020
+#define k_enemyCategory 0x0030
 
 #define k_blocksMask 0x0005
 #define k_resinBallRealMask 0x0003
-#define k_resinBallSensorMask 0x0008
+#define k_resinBallSensorMask 0x0038
 #define k_insectMask 0x0039
 #define k_wallMask 0x0008
-
+#define k_enemyMask 0x0010
 
 const int TAG_RESINBALL=1;//树脂球
 const int TAG_INSECT=2;//虫子
 const int TAG_WALL=4;//墙
+const int TAG_ENEMY=5;//敌人
+const int TAG_COLLECTIONLIST=6;//成就列表
 
 //tag标记
 const int TAG_INSECT_ACTION=9; //虫子的运动
@@ -52,42 +56,7 @@ const int POSITION_ITERATIONS = 8;
 
 // maximum number of steps per tick to avoid spiral of death
 const int MAXIMUM_NUMBER_OF_STEPS = 25;
-class Constant{
-/*public:
-//! convert from wstring to UTF8 using self-coding-converting
-static void  WStrToUTF8(std::string& dest, const wstring& src){
-	dest.clear();
-	for (size_t i = 0; i < src.size(); i++){
-		wchar_t w = src[i];
-		if (w <= 0x7f)
-			dest.push_back((char)w);
-		else if (w <= 0x7ff){
-			dest.push_back(0xc0 | ((w >> 6)& 0x1f));
-			dest.push_back(0x80| (w & 0x3f));
-		}
-		else if (w <= 0xffff){
-			dest.push_back(0xe0 | ((w >> 12)& 0x0f));
-			dest.push_back(0x80| ((w >> 6) & 0x3f));
-			dest.push_back(0x80| (w & 0x3f));
-		}
-		else if (sizeof(wchar_t) > 2 && w <= 0x10ffff){
-			dest.push_back(0xf0 | ((w >> 18)& 0x07)); // wchar_t 4-bytes situation
-			dest.push_back(0x80| ((w >> 12) & 0x3f));
-			dest.push_back(0x80| ((w >> 6) & 0x3f));
-			dest.push_back(0x80| (w & 0x3f));
-		}
-		else
-			dest.push_back('?');
-	}
-}
-
-//! simple warpper
-static std::string WStrToUTF8(const std::wstring& str){
-	std::string result;
-	WStrToUTF8(result, str);
-	return result;
-}*/
-};
+class Constant{};
 class InnerStage{//内边界结构体
 public:
 		float top;
@@ -95,7 +64,34 @@ public:
 		float left;
 		float right;//与屏幕右边界的距离（像素）
 };
+class CollectionDef{
+private:
+	unsigned int id;
+	bool enable;//是否可用（即是否获得此成就）
+	bool used;//是否已使用？
+	char* image;//图片名称
+	char* descrip;//描述
+	char* imageSkill;//技能图标
+	char* descripSkill;//技能介绍
+	char* nameSkill;//技能名称
+	char* descripHowToGet;//如何得到
+public:
+	CollectionDef();
+	CollectionDef(unsigned int id,bool enable,bool used,char* image,char* descrip){
+		this->id=id;
+		this->enable=enable;
+		this->used=used;
+		this->image=image;
+	};
+};
+/*
+class StrToUTF8{
+public:
+	static void  WStrToUTF8(std::string& dest, const std::wstring& src);
+	static std::string WStrToUTF8(const std::wstring& str);
 
+};
+*/
 
 
 #endif //__CONSTANT_H__

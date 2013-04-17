@@ -49,15 +49,23 @@ protected:
 	GameInsectModel* coveredInsect;//被覆盖的虫子
 
 public:
+	float blood;
+	int countBlood;//累加消耗的树脂
+	bool usedUp();//是否耗光树脂
+	void shrinkResinByBlood();//根据当前树脂量缩放树脂
 	GameResinBallModel();
 	virtual ~GameResinBallModel();
 
 	virtual bool init(b2World* world);
 	CREATE_FUNC_ONE_PARAM(GameResinBallModel,b2World*,world);
+	void clean();
 
 	void initBallBody(float32 radius);//实心圆半径
 	void createCircleBridge(int number,float32 radius);//创建环链
 	void shrinkResinBallBody(float32 scale);//缩小树脂球模型刚体
+
+	void initPolygonTexture();
+	void updatePolygonTexture();
 	
 	void accelerateCallBack(cocos2d::CCAcceleration* pAccelerationValue);//加速器变化时（倾斜手机屏幕）的回调函数
 

@@ -15,6 +15,8 @@ protected:
 	CCMenuItemImage *pCloseItem;
 	CCMenuItemImage *pPauseItem;//暂停按钮
 	GameResinBallModel* model;
+	CCLabelBMFont* ttf_resin;
+	CCLabelBMFont* ttf_insectNum;
 public:
 	InnerStage innerStage;//调试用
 public:
@@ -34,8 +36,11 @@ public:
 	// a selector callback
     void menuCloseCallback(CCObject* pSender);
 	void menuPauseCallBack(CCObject* pSender);
+	void menuGoBackCallBack(CCObject* pSender);
 	void keepStill(CCPoint lastPositionOfScene);//保持不动
 	void draw();
+
+	void setResinCount(GameResinBallModel* resin);
 };
 
 #endif //__STATIC_LAYER_H__

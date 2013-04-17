@@ -5,6 +5,9 @@
 #include "Delegate.h"
 #include "vector"
 #include "StaticLayer.h"
+#include "Constant.h"
+#include "SkillSlotAdapter.h"
+#include "Amber.h"
 
 USING_NS_CC;
 
@@ -17,11 +20,13 @@ class GameCollectionController :public CCLayer
 {
 public:
 	//StaticLayer* buttonLayer;//按钮层
-	int rightWidth;
+	int listWidth;
 	CCSize winSize;
 	unsigned int preIdx;
 	bool isMoving;//是否正在拖动琥珀
-	CCLayer* amberAddLayer;
+	CCSprite* amberAddLayer;
+	CCArray *_slots;//三个技能槽
+	SkillSlotAdapter* skillSlot;//技能槽适配类对象
 public:
 	GameCollectionController();
 	virtual ~GameCollectionController();
@@ -42,9 +47,11 @@ public:
 	virtual void ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent);
 	virtual void ccTouchCancelled(CCTouch *pTouch, CCEvent *pEvent);
 	
-    void menuStartCallback(CCObject* pSender);
+	void menuGoBackCallback(CCObject* pSender);
 
-	CCLayer* initbottomLayer();
+	CCSprite* initbottomLayer();
+	CCSprite* initTopTitle();//初始化顶部标题栏
+	CCSprite* initAmplificationIcon(const char *name,float amplification);//初始化增幅图标
 
 	CCSprite* getCurSprite(unsigned int idx);
 

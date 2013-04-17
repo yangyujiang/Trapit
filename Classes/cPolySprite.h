@@ -18,12 +18,12 @@ public:
     
     //重载父类draw
     void draw();
-    
-private:
     //初始化顶点信息
     bool initWithUV(const cocos2d::CCPoint *uvs,
                     const int *indices,
                     int verCnt);
+    
+private:
     
     //计算中点
     cocos2d::CCPoint getCenter();

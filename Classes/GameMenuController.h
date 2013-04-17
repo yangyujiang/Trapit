@@ -4,16 +4,10 @@
 #include "cocos2d.h"
 #include "Delegate.h"
 #include "vector"
-#include "StaticLayer.h"
 #include "../extensions/cocos-ext.h"
 
 USING_NS_CC;
 USING_NS_CC_EXT;
-
-const int TAG_LEFT_TABLE=100;
-const int TAG_LEFT_MID_PANEL=101;
-const int TAG_PANEL_COLOR=102;
-const int TAG_SLIDER=103;//滑块
 
 class GameMenuController :public CCLayer
 {
@@ -26,6 +20,11 @@ protected:
 }curPanel;
 	CCSize winSize;
 	CCScrollView* scrollView;
+	float countDown;//倒计时
+	char *str_time;//倒计时显示的字符串
+	CCLabelBMFont *ttf_clock;//倒计时Label
+	CCLabelBMFont *ttf_resin;//总树脂量
+	unsigned int cur_resin;//当前树脂量
 	int curPage;//当前页
 	unsigned int space;//空白
 	unsigned int nCount;//页数
@@ -60,12 +59,17 @@ public:
     void menuChooseResinCallback(CCObject* pSender);//点击树脂颜色选项卡回调
     void menuShopCallback(CCObject* pSender);//点击商店按钮回调
     void menuStartCallback(CCObject* pSender);//点击开始按钮回调
+	void menuWikiCallBack(CCObject* pSender);//点击百科按钮回调
+
+	void step(float dt);
 
 
 	virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
 	virtual void ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent);
 	virtual void ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent);
 	virtual void ccTouchCancelled(CCTouch *pTouch, CCEvent *pEvent);
+	virtual void  keyBackClicked();
+	virtual void keyMenuClicked();
 
 	void adjustScrollView(float distance);
 
@@ -74,6 +78,8 @@ public:
 	CCLayer* initLeftTopPanel();//初始化左上栏
 	CCLayer* initLeftMidPanel();//lefttable的中间部分
 	CCMenu* initLeftBottomdPanel();//lefttable的下方部分
+	void initResinVol();//初始化树脂量
+	void save();//存档
 
 public:
 	static CCScene* scene();

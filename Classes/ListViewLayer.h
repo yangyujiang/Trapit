@@ -4,6 +4,8 @@
 #include "cocos2d.h"
 #include "../extensions/cocos-ext.h"
 
+USING_NS_CC;
+
 class ListViewLayer : public cocos2d::CCLayer, public cocos2d::extension::CCTableViewDataSource, public cocos2d::extension::CCTableViewDelegate
 {
 protected:
@@ -26,6 +28,7 @@ public:
     virtual unsigned int numberOfCellsInTableView(cocos2d::extension::CCTableView *table);
 
     CREATE_FUNC(ListViewLayer);
+	void initList(int width,int height);
 };
 
 #endif 

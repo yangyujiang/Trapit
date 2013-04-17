@@ -13,16 +13,61 @@
 USING_NS_CC;
 USING_NS_CC_EXT;
 
+const int TAG_LEFT_TABLE=100;
+const int TAG_LEFT_MID_PANEL=101;
+const int TAG_PANEL_COLOR=102;
+const int TAG_SLIDER=103;//滑块
+
+const unsigned int ORIGIN_DOLLAR=100;//初始金币为100
+const unsigned int ORIGIN_RESIN=100;//初始树脂设为100
+const unsigned int DELTA_RESIN=10;//每到时间新产生的树脂量
+const unsigned int INTERVAL=10*60;//*60;//倒计时设为10分钟
+
+const char *RESIN_VOLUME="RESIN_VOLUME";//key 树脂容量
+const char *LAST_TIME="LAST_TIME";//key 上次退出游戏时系统时间
+const char *DOLLAR="DOLLAR";//key 金币数量
+
+long millisecondNow()  
+{ 
+struct cc_timeval now; 
+CCTime::gettimeofdayCocos2d(&now, NULL); 
+return (now.tv_sec * 1000 + now.tv_usec / 1000); 
+}
+long secondNow()  
+{ 
+struct cc_timeval now; 
+CCTime::gettimeofdayCocos2d(&now, NULL); 
+return (now.tv_sec); 
+}
+
 GameMenuController::GameMenuController():
 space(100),curPage(1),nCount(3),isScrolling(false),isSliding(false),
-	isMovingMap(false)
+	isMovingMap(false),str_time(NULL)
 {
+	str_time=(char*)calloc(10,sizeof(char));
+	countDown=INTERVAL;
 }
 
 
 GameMenuController::~GameMenuController()
 {	
+	free(str_time);
+}
 
+void timeToChar(float time,char* &str){//把float型的时间转化为xx:xx形式的字符串
+	unsigned int hour=time/60;
+	float second=time-hour*60;
+
+	//char str[10]={0};
+	if(hour<10&&second<10)
+		sprintf(str, "0%d:0%.0f", hour,second);	
+	else if(hour<10&&second>=10)
+		sprintf(str, "0%d:%.0f", hour,second);
+	else if(hour>=10&&second<10)
+		sprintf(str, "%d:0%.0f", hour,second);
+	else if(hour>=10&&second>=10)
+		sprintf(str, "%d:%.0f", hour,second);
+	CCLog("%s",str);
 }
 
 bool GameMenuController::init(){
@@ -45,7 +90,11 @@ bool GameMenuController::init(){
 	this->addChild(sp);
 
 	this->initMapScrollView();//初始化右侧面板
+	this->initResinVol();
 	this->initLeftTable();//初始化左侧面板
+	schedule(schedule_selector(GameMenuController::step), 1.0f);
+
+	this->setKeypadEnabled(true);
 
         pRet = true;
     }while(0);
@@ -66,9 +115,13 @@ CCMenu* GameMenuController::initLeftBottomdPanel(){
 	pCollectItem->setScale(CCDirector::sharedDirector()->getContentScaleFactor());
 	pCollectItem->setPosition(_left+tableWidth/2,_bottom);
 
+	CCSprite* wiki=CCSprite::createWithSpriteFrameName("btn_wiki.png");
+	CCMenuItem *btnWiki=CCMenuItemSprite::create(wiki,wiki,wiki,this,menu_selector(GameMenuController::menuWikiCallBack));
+	btnWiki->setAnchorPoint(ccp(1,0));
+	btnWiki->setPosition(tableWidth,0);
 
     // create menu, it's an autorelease object
-    CCMenu* pMenu = CCMenu::create(pGoBackItem,pCollectItem, NULL);
+    CCMenu* pMenu = CCMenu::create(pGoBackItem,pCollectItem,btnWiki, NULL);
 
 	
 	return pMenu;
@@ -126,19 +179,19 @@ CCLayer* GameMenuController::initLeftMidPanel(){//初始化左侧中间部分
 	//星星
 	CCSprite* stars=CCSprite::createWithSpriteFrameName("stars.png");
 	stars->setAnchorPoint(CCPointZero);
-	stars->setPosition(ccp(30,30));
+	stars->setPosition(ccp(20,30));
 	leftPanel->addChild(stars);
 	
 	//技能槽
 	CCSprite* skillSlots=CCSprite::createWithSpriteFrameName("skillslots.png");
 	skillSlots->setAnchorPoint(ccp(1,0));
-	skillSlots->setPosition(ccp(tableWidth+100,30));
+	skillSlots->setPosition(ccp(tableWidth*0.98f,30));
 	leftPanel->addChild(skillSlots);
 
 	//树脂、水浓度调整条
 	CCSprite* slide=CCSprite::createWithSpriteFrameName("slide.png");
 	slide->setAnchorPoint(ccp(1,0));
-	slide->setPosition(ccp(tableWidth+100,0.6f*panelSize.height));
+	slide->setPosition(ccp(tableWidth*0.98f,0.6f*panelSize.height));
 	leftPanel->addChild(slide);
 
 	//滑块
@@ -165,18 +218,40 @@ CCLayer* GameMenuController::initLeftTopPanel(){
 	CCSprite* shop=CCSprite::createWithSpriteFrameName("btn_shop.png");
 	CCMenuItemSprite* btnShop=CCMenuItemSprite::create(shop,shop,shop,this,menu_selector(GameMenuController::menuShopCallback));
 	
-
 	//左上面板大小
 	leftTopLayer->setContentSize(CCSizeMake(tableWidth,column_dollar->getContentSize().height));
 
 	leftTopLayer->addChild(column_dollar);
 	column_dollar->setAnchorPoint(CCPointZero);
 	column_dollar->setPosition(CCPointZero);
-	//leftTopLayer->addChild(column_clock);
-	column_clock->setAnchorPoint(ccp(1,1));
+	unsigned int dollar=CCUserDefault::sharedUserDefault()->getIntegerForKey(DOLLAR,ORIGIN_DOLLAR);
+	char str_dollar[10]={0};
+	sprintf(str_dollar,"%d",dollar);
+	CCLabelBMFont *ttf_dollar=CCLabelBMFont::create(str_dollar, "fonts/bitmapFontTest3.fnt");//CCLabelTTF::create(CCString::createWithFormat("498")->getCString(),"AppleGothic", 30.0);
+	ttf_dollar->setAnchorPoint(ccp(0.5,0.5));
+	ttf_dollar->setPosition(ccp(column_dollar->getContentSize().width*2.2f/4,column_dollar->getContentSize().height/2));
+	column_dollar->addChild(ttf_dollar);
+
 	leftTopLayer->addChild(column_amber);
 	column_amber->setAnchorPoint(ccp(1,0));
 	column_amber->setPosition(ccp(leftTopLayer->getContentSize().width,0));
+	
+	ttf_resin=CCLabelBMFont::create("0", "fonts/bitmapFontTest3.fnt");//CCLabelTTF::create(CCString::createWithFormat("100")->getCString(),"AppleGothic", 30.0);
+	ttf_resin->setAnchorPoint(ccp(0.5,0.5));
+	char str[10] = {0};
+    sprintf(str, "%d", cur_resin);
+	ttf_resin->setString(str);
+	ttf_resin->setPosition(ccp(column_amber->getContentSize().width*2.2f/4,column_amber->getContentSize().height/2));
+	column_amber->addChild(ttf_resin);
+
+	leftTopLayer->addChild(column_clock);
+	column_clock->setAnchorPoint(ccp(1,0));
+	column_clock->setPosition(ccp(column_amber->getPositionX()-column_amber->getContentSize().width,0));
+	
+	ttf_clock=CCLabelBMFont::create(str_time, "fonts/bitmapFontTest3.fnt");//CCLabelTTF::create(CCString::createWithFormat("10:00")->getCString(),"AppleGothic", 30.0);
+	ttf_clock->setAnchorPoint(ccp(0,0.5));
+	ttf_clock->setPosition(ccp(column_clock->getContentSize().width*2.2f/4-ttf_clock->getContentSize().width/2,column_clock->getContentSize().height/2));
+	column_clock->addChild(ttf_clock);
 	
 	CCMenu* menuShop=CCMenu::create(btnShop,NULL);
 	menuShop->setAnchorPoint(ccp(0,0.5));
@@ -185,6 +260,26 @@ CCLayer* GameMenuController::initLeftTopPanel(){
 	leftTopLayer->addChild(menuShop);
 
 	return leftTopLayer;
+}
+void GameMenuController::initResinVol(){
+	long now=secondNow();
+	//上次退出时系统时间，若没有，则返回当前系统时间
+	long last_time=CCUserDefault::sharedUserDefault()->getIntegerForKey(LAST_TIME,now);
+	//获取上次存档时的树脂量，若没有则初始化为基础量
+	cur_resin=CCUserDefault::sharedUserDefault()->getIntegerForKey(RESIN_VOLUME,ORIGIN_RESIN);
+	
+	//计算上次存档到此时的时间间隔，并据此计算出 应新产生的树脂量 和 当前倒计时的初始值
+	long duration=now-last_time;
+	if(duration>0){//非第一次进入
+		unsigned int deltaCount=duration/INTERVAL;
+		cur_resin+=DELTA_RESIN*deltaCount;//当前总树脂量
+		CCUserDefault::sharedUserDefault()->setIntegerForKey(RESIN_VOLUME,cur_resin);
+		CCUserDefault::sharedUserDefault()->flush();
+		countDown=INTERVAL-(duration-INTERVAL*deltaCount);//当前倒计时初始值
+	}else{//第一次进入
+		countDown=INTERVAL;
+	}
+	timeToChar(countDown,str_time);
 }
 
 void GameMenuController::initLeftTable(){	
@@ -352,6 +447,13 @@ void GameMenuController::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent){
 void GameMenuController::ccTouchCancelled(CCTouch *pTouch, CCEvent *pEvent){
 
 }
+void GameMenuController::keyBackClicked(){
+	CCLog("key back clicked");
+	this->menuGoBackCallback(this);
+}
+void GameMenuController::keyMenuClicked(){
+	CCLog("key menu clicked");
+}
 
 void GameMenuController::adjustScrollView(float distance){
 
@@ -373,17 +475,36 @@ void GameMenuController::adjustScrollView(float distance){
 void GameMenuController::update(float dt){
 	
 }
+void GameMenuController::step(float dt){
+	if(countDown-dt<=0){//时间到
+		countDown=INTERVAL;
+		cur_resin+=DELTA_RESIN;
+		char str[10]={0};
+		sprintf(str,"%d",cur_resin);
+		ttf_resin->setString(str);
+	}
+	else countDown-=dt;
+
+	unsigned int hour=countDown/60;
+	float second=countDown-hour*60;
+
+	timeToChar(countDown,str_time);
+    ttf_clock->setString( str_time );
+}
 
 void GameMenuController::menuGoBackCallback(CCObject* pSender){
 	CCLog("go Back to welcome page");
-	CCDirector::sharedDirector()->replaceScene(CCTransitionCrossFade::create(2,GameWelcomeController::scene()));
+	CCDirector::sharedDirector()->replaceScene(CCTransitionCrossFade::create(1,GameWelcomeController::scene()));
 }
 void GameMenuController::menuCollectCallback(CCObject* pSender){
 	CCLog("go to collections page");
-	CCDirector::sharedDirector()->replaceScene(CCTransitionCrossFade::create(2,GameCollectionController::scene()));
+	CCDirector::sharedDirector()->replaceScene(CCTransitionCrossFade::create(1,GameCollectionController::scene()));
 }
 void GameMenuController::menuClickCallback(CCObject* pSender){
 	CCLog("click");
+}
+void GameMenuController::menuWikiCallBack(CCObject* pSender){
+	CCLog("click wiki button");
 }
 
 void GameMenuController::menuShopCallback(CCObject* pSender){//点击商店按钮回调
@@ -418,16 +539,27 @@ void GameMenuController::menuChooseResinCallback(CCObject* pSender){
 }
 
 void GameMenuController::onEnter(){
+	CCLog("MENU:onEnter");
 	CCDirector::sharedDirector()->getTouchDispatcher()->addTargetedDelegate(this,1,true);
 	CCLayer::onEnter();
 }
 void GameMenuController::onEnterTransitionDidFinish(){
+	CCLog("MENU:onEnterTransitionDidFinish");
 	CCLayer::onEnterTransitionDidFinish();
 }
 void GameMenuController::onExitTransitionDidStart(){
+	CCLog("MENU:onExitTransitionDidStart");
 	CCLayer::onExitTransitionDidStart();
 }
 void GameMenuController::onExit(){
+	CCLog("MENU:onExit");
+	this->save();
 	CCDirector::sharedDirector()->getTouchDispatcher()->removeDelegate(this);
 	CCLayer::onExit();
+}
+void GameMenuController::save(){
+	//退出时把当前系统时间存档,减去当前倒计时已经消耗的时间
+	CCUserDefault::sharedUserDefault()->setIntegerForKey(LAST_TIME,secondNow()-(INTERVAL-countDown));
+	CCUserDefault::sharedUserDefault()->setIntegerForKey(RESIN_VOLUME,cur_resin);//当前树脂量存档
+	CCUserDefault::sharedUserDefault()->flush();
 }

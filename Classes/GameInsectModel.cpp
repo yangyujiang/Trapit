@@ -14,11 +14,17 @@ GameInsectModel::GameInsectModel():_velocity(100),_observerDelegate(NULL),_body(
 
 GameInsectModel::~GameInsectModel()
 {
+	CCLog("~InsectModel");
+}
+void GameInsectModel::clean(){
+	_world->DestroyBody(_body);
+	
 }
 
 bool GameInsectModel::init(b2World* world){
 	bool pRet=false;
 	do{ 		
+		_world=world;
 		this->setTag(TAG_INSECT);
 		this->randomPositionAndAngle();
 		
@@ -87,7 +93,7 @@ void GameInsectModel::randomPositionAndAngle(){
 	//this->setPosition(900,300);
 	this->setPosition(ccp(posX,posY));
 	this->setRotation(angle);
-	CCLog("%f,%f,%f,%f",posX,posY,angle,random);
+	//CCLog("%f,%f,%f,%f",posX,posY,angle,random);
 }
 
 void GameInsectModel::moveRandom(){
@@ -209,7 +215,7 @@ void GameInsectModel::updateInsectState(){
 			isAlive=false;//虫子死去
 			this->stopAllActions();//停掉所有动作
 			
-			CCLog("kaokaokao");
+			CCLog("insect dead now!");
 			_observerDelegate->testModelDelegate();
 		}
 	}

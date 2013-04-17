@@ -14,7 +14,7 @@ private:
 	GameModelDelegate* _observerDelegate;//虫子模型的观察者，一般为虫子的view对象
 protected:
 	b2Body* _body;//虫子的身体
-	//b2Body* _world;
+	b2World* _world;
 	CC_PROPERTY(float,_velocity,Velocity);//虫子速度
 	b2Fixture *visualField;//视野fixture
 protected:
@@ -28,6 +28,7 @@ public:
 	virtual ~GameInsectModel();
 	virtual bool init(b2World* world);
 	CREATE_FUNC_ONE_PARAM(GameInsectModel,b2World*,world)
+	void clean();
 	void initObserver(GameModelDelegate* pDelegate);//初始化观察者，一般为与Model对应的View
 	void initVisualField();//初始化视野fixture
 	

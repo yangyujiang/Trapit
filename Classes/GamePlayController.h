@@ -9,6 +9,7 @@
 #include "vector"
 #include "Box2D\Box2D.h"
 #include "GameResinBallModel.h"
+#include "Enemy.h"
 #include "GameResinBallView.h"
 #include "StaticLayer.h"
 
@@ -36,8 +37,7 @@ protected:
 	b2MouseJoint *_mouseJoint;//调试用，鼠标关节
 
 public:
-	b2World* _world;
-	GamePlayView *view;
+	b2World* _world;//box2d世界
 	StaticLayer* buttonLayer;//按钮层
 	MapLayer* mapLayer;//地图层
 	GameInsectView *_insectView;
@@ -45,6 +45,7 @@ public:
 
 	GameResinBallModel *_resinBallModel;
 	GameResinBallView *_resinBallView;
+	vector<Enemy*> enemys;
 
 	vector<GameInsectModel*> _insects;
 
@@ -87,6 +88,12 @@ public:
 	void dealWithTouchesBegan(b2Vec2 locationWorld);
 	void dealWithTouchesMoved(b2Vec2 locationWorld);
 	void dealWithTouchesEnded();
+
+	void shrinkCallBack(CCObject* pSender);
+
+public:
+	void checkGameOverAndDo();
+	void menuGoBackCallback(CCObject* pSender);
 };
 
 

@@ -102,7 +102,8 @@ void cPolySprite::translate(const cocos2d::CCPoint& pos)
 {
     //ÉèÖÃÃªµã
     CCSize rc = m_pobTexture->getContentSize();
-    setAnchorPoint(ccp(pos.x/rc.width, pos.y/rc.height));
+    //setAnchorPoint(ccp(pos.x/rc.width, pos.y/rc.height));
+	this->setAnchorPoint(ccp(0.5,0.5));
 }
 
 void cPolySprite::drawPoly()

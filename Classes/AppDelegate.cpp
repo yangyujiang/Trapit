@@ -23,6 +23,7 @@ AppDelegate::~AppDelegate()
 
 bool AppDelegate::applicationDidFinishLaunching()
 {
+	CCLog("applicationDidFinishLaunching");
   // initialize director
     CCDirector* pDirector = CCDirector::sharedDirector();
     CCEGLView* pEGLView = CCEGLView::sharedOpenGLView();
@@ -69,7 +70,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 
     // create a scene. it's an autorelease object
     //CCScene *pScene = GamePlayController::scene();
-	CCScene *pScene = GameMenuController::scene();
+	CCScene *pScene = GameMenuController::scene();pScene->setTag(1111);
    // CCScene *pScene = GameWelcomeController::scene();
 	//CCScene *pScene = GameCollectionController::scene();
 	//CCScene *pScene = TableViewTestLayer::scene();
@@ -87,6 +88,12 @@ void AppDelegate::applicationDidEnterBackground()
     CCDirector::sharedDirector()->stopAnimation();
 
     SimpleAudioEngine::sharedEngine()->pauseBackgroundMusic();
+	CCLog("applicationDidEnterBackground");
+
+	CCScene* scene=CCDirector::sharedDirector()->getRunningScene();
+	if(scene->getTag()==1111){
+		((GameMenuController*)(scene->getChildren()->lastObject()))->save();
+	}
 }
 
 // this function will be called when the app is active again
@@ -95,4 +102,10 @@ void AppDelegate::applicationWillEnterForeground()
     CCDirector::sharedDirector()->startAnimation();
 
     SimpleAudioEngine::sharedEngine()->resumeBackgroundMusic();
+	CCLog("applicationWillEnterForeground");
+	
+	CCScene* scene=CCDirector::sharedDirector()->getRunningScene();
+	if(scene!=NULL&&scene->getTag()==1111){
+		((GameMenuController*)(scene->getChildren()->lastObject()))->initResinVol();
+	}
 }

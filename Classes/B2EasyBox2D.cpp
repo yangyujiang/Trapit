@@ -39,6 +39,9 @@ b2World* B2EasyBox2D::createWorld(b2Vec2 gravity){
 	b2World *_world = new b2World(gravity);
 	
 	_world->SetAllowSleeping(doSleep);
+	
+	_world->SetAutoClearForces(false);
+	_world->SetAllowSleeping(true);//设置世界是否允许睡眠
 
 	return _world;
 }
@@ -180,7 +183,9 @@ void B2EasyBox2D::shrinkBox(b2Body* body,float32 width,float32 height,float32 sc
 	body->DestroyFixture(fixture);
 
 	b2PolygonShape shapeRequest;
-	shapeRequest.SetAsBox(width*scale/2.0f/PTM_RATIO,height*scale/2.0f/PTM_RATIO,b2Vec2(0,0),angle);
+	float32 widthScale=scale*2>1?1:scale*2;
+	CCLog("widthScale:%f",widthScale);
+	shapeRequest.SetAsBox(width*widthScale/2.0f/PTM_RATIO,height*scale/2.0f/PTM_RATIO,b2Vec2(0,0),angle);
 	
 	b2FixtureDef fixtureRequest;
 	fixtureRequest.shape=&shapeRequest;

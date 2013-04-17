@@ -2,11 +2,15 @@
 #include "Constant.h"
 #include "B2EasyBox2D.h"
 #include "DrawUtil.h"
+#include "cPolySprite.h"
 
 USING_NS_CC;
 
+const int Origin_blood=300;
+const int tag_PolySprite=123;//多边形图片的tag索引
 //全局函数
-b2Joint* createRevoluteJoint(b2World* world,b2Body* body1,b2Body* body2,b2Vec2 anchor){//根据两个body和一个节点创建一个旋转关节并返回
+//根据两个body和一个节点创建一个旋转关节并返回
+b2Joint* createRevoluteJoint(b2World* world,b2Body* body1,b2Body* body2,b2Vec2 anchor){
 		//定义关节需求
 		b2RevoluteJointDef revoluteJoint;
 		revoluteJoint.Initialize( body1, body2, anchor);
@@ -27,7 +31,7 @@ b2Joint* createRevoluteJoint(b2World* world,b2Body* body1,b2Body* body2,b2Vec2 a
 //
 GameResinBallModel::GameResinBallModel():_ballBody(NULL),_world(NULL)
 	,_currentBlockHeight(0),_currentBlockWidth(0),attack(10)
-	,coveredInsect(NULL),lastPosition(ccp(0,0)),_radius(0)
+	,coveredInsect(NULL),lastPosition(ccp(0,0)),_radius(0),blood(Origin_blood),countBlood(0)
 {
   BALL_FRICTION=0.1f;//实心球与地面的摩擦系数
   BALL_GRAVITY=150;//实心球重力（N）,固定不变
@@ -41,6 +45,10 @@ GameResinBallModel::~GameResinBallModel()
 {
 	_world=NULL;
 }
+void GameResinBallModel::clean(){
+	
+}
+//初始化实心球的刚体
 void GameResinBallModel::initBallBody(float32 radius){
 	//const float32 radius=20;//实心圆半径
 	//const float32 magnification=1.35f;//环形链半径比圆圆环的放大倍数
@@ -63,7 +71,7 @@ void GameResinBallModel::initBallBody(float32 radius){
 	
 	//创建一个sensorFixture, 用来与虫子检测可重叠的碰撞
 	b2CircleShape sensorShape;
-	sensorShape.m_radius=0.5;
+	sensorShape.m_radius=1;
 	b2Filter sensorFilter;
 	sensorFilter.groupIndex=k_resinBallBodyGroup;
 	sensorFilter.categoryBits=k_resinBallSensorCategory;
@@ -74,7 +82,7 @@ void GameResinBallModel::initBallBody(float32 radius){
 	sensorDef.filter=sensorFilter;
 	sensorDef.isSensor=true;
 	_sensorBall=_ballBody->CreateFixture(&sensorDef);
-
+	
 	//_delegateBall=B2EasyBox2D::createCircle(_world,centerX,centerY,radius+1,false,this,10.0f,0.8f,0,false,NULL,true);
 }
 
@@ -83,7 +91,7 @@ bool GameResinBallModel::init(b2World* world){
 	do{
 		_world=world;
 		this->setTag(TAG_RESINBALL);
-		_ballRadius=30;
+		_ballRadius=40;//实心球的半径30
 		float factor=CCDirector::sharedDirector()->getContentScaleFactor();
 		//_ballRadius*=factor;
 		this->initBallBody(_ballRadius);//半径
@@ -92,8 +100,8 @@ bool GameResinBallModel::init(b2World* world){
 		_radius=magnification*_ballRadius;
 		this->createCircleBridge(20,_radius);
 
-		//this->setPosition(ccp(10,0));
-		//this->schedule(schedule_selector(GameResinBallModel::update));
+		this->initPolygonTexture();
+		//this->shrinkResinBallBody(0.5);
 
 		pRet=true;
 	}while(0);
@@ -228,28 +236,129 @@ void GameResinBallModel::accelerateCallBack(CCAcceleration* pAccelerationValue){
 	}
 }
 
+void GameResinBallModel::updatePolygonTexture(){
+	if(_blockJoints.size()>2){
+		cPolySprite *sprite=(cPolySprite*)this->getChildByTag(tag_PolySprite);
+		const int count=_blockJoints.size();
+		const int indexCount=(count-2)*3;
+
+		float width=200;//图片宽度
+		float height=200;//图片高度
+
+		width=sprite->getContentSize().width;
+		height=sprite->getContentSize().height;
+		CCPoint points[100];
+		int index[100];
+		for(unsigned int i=0;i<count;i++){
+			CCPoint p=ccp(_blockJoints[i]->GetAnchorA().x*PTM_RATIO,_blockJoints[i]->GetAnchorA().y*PTM_RATIO);
+		//	CCLog("anchor:%f,%f",p.x,p.y);
+			points[i]=ccp(p.x-(this->getPositionX()-width/2),p.y-(this->getPositionY()-height/2));
+			//CCLog("%f,%f",points[i].x,points[i].y);
+			points[i]=ccp(points[i].x/width,points[i].y/height);
+			//CCLog("%f,%f",points[i].x,points[i].y);
+			points[i].y=1-points[i].y;
+			//CCLog("%f,%f",points[i].x,points[i].y);
+		}
+		int k=0;
+		for(unsigned int i=1;i<count-1;i++){
+			if(k+3>indexCount) break;
+
+			index[k++]=0;
+			index[k++]=i;
+			index[k++]=i+1;
+		}
+		sprite->initWithUV(points,index,count);
+	}
+}
+void GameResinBallModel::initPolygonTexture(){
+	if(_blockJoints.size()>2){
+		const int count=_blockJoints.size();
+		const int indexCount=(count-2)*3;
+
+		float width=200;//图片宽度
+		float height=200;//图片高度
+		CCSprite* p=CCSprite::create("nei.png");
+		width=p->getContentSize().width;
+		height=p->getContentSize().height;
+		CCPoint points[100];
+		int index[100];
+		for(unsigned int i=0;i<count;i++){
+			CCPoint p=ccp(_blockJoints[i]->GetAnchorA().x*PTM_RATIO,_blockJoints[i]->GetAnchorA().y*PTM_RATIO);
+		//	CCLog("anchor:%f,%f",p.x,p.y);
+			points[i]=ccp(p.x-(this->getPositionX()-width/2),p.y-(this->getPositionY()-height/2));
+			//CCLog("%f,%f",points[i].x,points[i].y);
+			points[i]=ccp(points[i].x/width,points[i].y/height);
+			//CCLog("%f,%f",points[i].x,points[i].y);
+			points[i].y=1-points[i].y;
+			//CCLog("%f,%f",points[i].x,points[i].y);
+		}
+		int k=0;
+		for(unsigned int i=1;i<count-1;i++){
+			if(k+3>indexCount) break;
+
+			index[k++]=0;
+			index[k++]=i;
+			index[k++]=i+1;
+		}
+		cPolySprite *csp = cPolySprite::create("nei.png", points, count, index);
+		csp->setTag(tag_PolySprite);
+		this->addChild(csp);
+		csp->setAnchorPoint(ccp(0.5,0.5));
+		//csp->setPosition(ccp(500,300));
+	}
+}
 
 void GameResinBallModel::shrinkResinBallBody(float32 scale){
-	_ballBody->GetFixtureList()->GetShape()->m_radius=0.1f;
-
+	_ballRadius*=scale;
+	//_world->DestroyBody(_ballBody);
+	_ballBody->GetFixtureList()->GetShape()->m_radius=_ballRadius/PTM_RATIO;
+	_ballBody->GetFixtureList()->GetNext()->GetShape()->m_radius*=scale;
+	
+	for(unsigned int i=0;i<_blockJoints.size();i++){
+		_world->DestroyJoint(_blockJoints[i]);
+	}
+	for(unsigned int i=0;i<_blocks.size();i++){
+		this->removeChild((CCNode*)_blocks[i]->GetUserData(),true);
+		_world->DestroyBody(_blocks[i]);
+	}
+	_blockJoints.clear();
+	_blocks.clear();
+	CCLog("_blocks.size():%d",_blocks.size());
+	
+	//this->initBallBody(_ballRadius);
+	const float32 magnification=1.35f;//环形链半径比圆圆环的放大倍数
+	_radius=magnification*_ballRadius;
+	this->createCircleBridge(20,_radius);
+	
+	CCLog("_ballRadius:%f",_ballRadius);
+	CCLog("_radius:%f",_radius);
+/*
 	vector<b2Vec2> anchors;
 	for(unsigned int i=0;i<_blocks.size();i++){
-	B2EasyBox2D::shrinkBox(_blocks[i],_currentBlockHeight,_currentBlockWidth,0.5f);
-	b2Vec2 currentPosition=_blocks[i]->GetWorldCenter();
-	b2Vec2 center=b2Vec2(getPositionX()/PTM_RATIO,getPositionY()/PTM_RATIO);
-	b2Vec2 newPosition=b2Vec2(center.x+(currentPosition.x-center.x)*scale,center.y+(currentPosition.y-center.y)*scale);
-	_blocks[i]->SetTransform(newPosition,0);
+		B2EasyBox2D::shrinkBox(_blocks[i],_currentBlockWidth,_currentBlockHeight,0.5f);
 
-	b2Vec2 position=b2Vec2(center.x+(_blockJoints[i]->GetAnchorA().x-center.x)*scale,
-		center.y+(_blockJoints[i]->GetAnchorA().y-center.y)*scale);
-	anchors.push_back(position);
+		//计算每个小方块的新的中心点坐标
+		b2Vec2 currentPosition=_blocks[i]->GetWorldCenter();
+		b2Vec2 center=b2Vec2(getPositionX()/PTM_RATIO,getPositionY()/PTM_RATIO);
+		b2Vec2 newPosition=b2Vec2(center.x+(currentPosition.x-center.x)*scale,center.y+(currentPosition.y-center.y)*scale);
+		_blocks[i]->SetTransform(newPosition,0);
+
+		b2Vec2 position=b2Vec2(center.x+(_blockJoints[i]->GetAnchorA().x-center.x)*scale,
+			center.y+(_blockJoints[i]->GetAnchorA().y-center.y)*scale);
+		anchors.push_back(position);
 	}
 	for(unsigned int i=0;i<_blockJoints.size();i++){
 		int nexti=i+1;
 		if(nexti==_blockJoints.size()) nexti=0;
-	//	b2Joint* newJoint=createRevoluteJoint(_world,_blocks[i],_blocks[nexti],anchors[i]);
-		_world->DestroyJoint(_blockJoints[i]);
+		//b2Joint* newJoint=createRevoluteJoint(_world,_blocks[i],_blocks[nexti],anchors[i]);
+		//_world->DestroyJoint(_blockJoints[i]);
 		//_blockJoints[i]=newJoint;
+	}*/
+}
+void GameResinBallModel::shrinkResinByBlood(){
+	countBlood=(int)blood%(Origin_blood/3);
+	if(countBlood==1){
+	//	this->shrinkResinBallBody(0.8);
 	}
 }
 
@@ -268,18 +377,23 @@ void GameResinBallModel::update(float dt){
 			userData->setRotation(-body->GetAngle()*180/M_PI);
 		}
 	}
+	this->updatePolygonTexture();
 
 	if(!_observerDelegate) return;
 
 	_observerDelegate->testModelDelegate();
+
+	this->shrinkResinByBlood();
 }
 
 void GameResinBallModel::attackInsect(GameInsectModel* insect,float reducedBlood){
 	if(insect->attacked(reducedBlood)){
 		coveredInsect=NULL;
-	}
+	}else blood-=reducedBlood;
 }
-
+bool GameResinBallModel::usedUp(){
+	return blood<=0;
+}
 //
 //与虫子的碰撞检测
 //

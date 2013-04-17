@@ -158,6 +158,11 @@
             <filename>skillslots.png</filename>
             <filename>slide.png</filename>
             <filename>slider.png</filename>
+            <filename>slot.png</filename>
+            <filename>star.png</filename>
+            <filename>star_panel.png</filename>
+            <filename>btn_wiki.png</filename>
+            <filename>stars_.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

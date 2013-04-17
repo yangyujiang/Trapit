@@ -6,6 +6,22 @@
 
 USING_NS_CC;
 
+#define CREATE_FUNC_NO_PARAM(modelName) \
+static modelName* create() \
+{ \
+modelName* pModel = new modelName(); \
+if(pModel&&pModel->init()) \
+{\
+return pModel; \
+}\
+else\
+{\
+delete pModel;\
+pModel=NULL;\
+return NULL;\
+}\
+};
+
 #define CREATE_FUNC_ONE_PARAM(modelName,__PARAMTYPE__,__PARAM__) \
 static modelName* create(__PARAMTYPE__ __PARAM__) \
 { \
