@@ -19,6 +19,7 @@ class SmartRes
 {
 public:
     static SmartRes* sharedRes(void);
+	virtual ~SmartRes();
 
     // 设定虚拟屏幕的宽度
     void setVirtualScreenWidth(float width);

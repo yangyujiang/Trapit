@@ -127,7 +127,7 @@ bool MapLayer::init(){
 		// 先调用超类的init方法
         CC_BREAK_IF(! CCLayer::init());
 
-		_map=CCSprite::create("map.png");
+		_map=CCSprite::create("playBg.png");
 	//	CCLog("factor:%f",CCDirector::sharedDirector()->getContentScaleFactor());
 		_map->setScale(CCDirector::sharedDirector()->getContentScaleFactor());
 		CC_BREAK_IF(!_map);

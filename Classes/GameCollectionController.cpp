@@ -52,7 +52,7 @@ GameCollectionController::GameCollectionController():preIdx(0),isMoving(false)
 
 GameCollectionController::~GameCollectionController()
 {	
-	
+	//_slots->removeAllObjects();
 }
 
 bool GameCollectionController::init(){
@@ -62,7 +62,7 @@ bool GameCollectionController::init(){
         // 先调用超类的init方法
 		CC_BREAK_IF(! CCLayer::init());
 	CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("insects.plist","insects.png");
-	CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("leftPanel.plist","leftPanel.png");
+	CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("menu.plist","menu.png");
 	CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("ambers.plist","ambers.png");
 		winSize=CCDirector::sharedDirector()->getWinSize();
 		
@@ -86,7 +86,7 @@ bool GameCollectionController::init(){
 
 		//垂直滑动列表
 		ListViewLayer* listViewLayer=ListViewLayer::create();
-		listViewLayer->initList(listWidth,winSize.height-topTitle->getContentSize().height-amberAddLayer->getContentSize().height);
+		listViewLayer->initList(listWidth,winSize.height-topTitle->getContentSize().height-amberAddLayer->getContentSize().height,20,CCSizeMake(960,120));
 		listViewLayer->setTag(TAG_LIST);
 	//	listViewLayer->getChildByTag(TAG_COLLECTIONLIST)->setContentSize(CCSizeMake(listWidth,winSize.height-topTitle->getContentSize().height));
 		listViewLayer->setPosition(ccp(0,amberAddLayer->getContentSize().height));
@@ -117,7 +117,7 @@ bool GameCollectionController::init(){
 		//Amber::getAmbersFromSQLite();
 		
 		//返回按钮
-		CCSprite* goback=CCSprite::createWithSpriteFrameName("goback.png");
+		CCSprite* goback=CCSprite::createWithSpriteFrameName("btn_goback.png");
 		CCMenuItemSprite* btnGoBack=CCMenuItemSprite::create(goback,goback,goback,this,menu_selector(GameCollectionController::menuGoBackCallback));
 		btnGoBack->setAnchorPoint(CCPointZero);
 		btnGoBack->setPosition(CCPointZero);
@@ -149,8 +149,8 @@ CCSprite* GameCollectionController::initAmplificationIcon(const char* name,float
 	ttf_name->setAnchorPoint(ccp(0,0.5));
 	ttf_name->setPosition(ccp(0,bg->getContentSize().height/2));
 	bg->addChild(ttf_name);
-	CCSprite* star=CCSprite::createWithSpriteFrameName("stars_.png");
-	CCSprite* stars=CCSprite::create("stars_.png",CCRect(0,0,star->getContentSize().width*amplification/3,star->getContentSize().height));//:createWithSpriteFrameName("stars_.png");
+	CCSprite* star=CCSprite::createWithSpriteFrameName("stars_three.png");
+	CCSprite* stars=CCSprite::create("stars_three.png",CCRect(0,0,star->getContentSize().width*amplification/3,star->getContentSize().height));//:createWithSpriteFrameName("stars_.png");
 	stars->setAnchorPoint(ccp(0,0.5));
 	stars->setPosition(ccp(ttf_name->getPositionX()+ttf_name->getContentSize().width,bg->getContentSize().height/2));
 	bg->addChild(stars);
@@ -336,5 +336,8 @@ void GameCollectionController::onExitTransitionDidStart(){
 }
 void GameCollectionController::onExit(){
 	CCDirector::sharedDirector()->getTouchDispatcher()->removeDelegate(this);
+	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("menu.plist");
+	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("insects.plist");
+	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("ambers.plist");
 	CCLayer::onExit();
 }

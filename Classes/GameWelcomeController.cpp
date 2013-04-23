@@ -30,7 +30,7 @@ bool GameWelcomeController::init(){
 		CC_BREAK_IF(! CCLayer::init());
 		CCSize winSize=CCDirector::sharedDirector()->getWinSize();
 
-		CCMenuItemImage* pStartItem=CCMenuItemImage::create("start.png","start.png",this,menu_selector(GameWelcomeController::menuStartCallback));
+		CCMenuItemImage* pStartItem=CCMenuItemImage::create("btn_start.png","btn_start.png",this,menu_selector(GameWelcomeController::menuStartCallback));
 		CC_BREAK_IF(!pStartItem);
 		this->setScale(CCDirector::sharedDirector()->getContentScaleFactor());//ÆÁÄ»ÊÊÓ¦£¬Í¼Æ¬Ëõ·Å
 		pStartItem->setPosition(winSize.width/2,winSize.height/4);

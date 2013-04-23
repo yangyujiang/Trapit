@@ -21,6 +21,7 @@ protected:
   const float mPtmRatio;
  
 public:
+	virtual ~B2DebugDrawLayer();
   B2DebugDrawLayer(b2World* pB2World, float pPtmRatio);
   static B2DebugDrawLayer* create(b2World* pB2World, float pPtmRatio);
   virtual bool init();

@@ -6,7 +6,9 @@
 USING_NS_CC;
 
 SmartRes* SmartRes::s_sharedRes = NULL;
-
+SmartRes::~SmartRes(){
+	CC_SAFE_DELETE(s_sharedRes);
+}
 SmartRes* SmartRes::sharedRes(void)
 {
     if (!s_sharedRes)

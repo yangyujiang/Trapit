@@ -1,12 +1,13 @@
 #include "GamePlayController.h"
 #include "B2EasyBox2D.h"
 #include "B2DebugDrawLayer.h"
-#include "myContactListener.h"
 #include "DrawUtil.h"
 #include "Constant.h"
 #include "VisibleRect.h"
 #include "cPolySprite.h"
 #include "GameMenuController.h"
+#include "GameOverController.h"
+#include "Message.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)   
 #include "vld.h"   
@@ -15,7 +16,7 @@
 USING_NS_CC;
 
 GamePlayController::GamePlayController():_insectView(NULL),_insectModel(NULL),_world(NULL)
-	,_resinBallModel(NULL),_resinBallView(NULL),_mouseJoint(NULL)
+	,_resinBallModel(NULL),_resinBallView(NULL),_mouseJoint(NULL),amberCount(0)
 {
 }
 
@@ -24,6 +25,12 @@ GamePlayController::~GamePlayController()
 {	
 	CC_SAFE_RELEASE_NULL(_resinBallView);
 	CC_SAFE_RELEASE_NULL(_resinBallModel);
+	CC_SAFE_RELEASE_NULL(buttonLayer);
+	CC_SAFE_RELEASE_NULL(mapLayer);
+	enemys.clear();
+	_insects.clear();
+
+	CC_SAFE_DELETE(contactListener);
 
 	delete _world;
 	_world=NULL;
@@ -41,34 +48,21 @@ void GamePlayController::initResinBall(){//³õÊ¼»¯ÊÓÍ¼¼°ÆäÄ£ĞÍ
 
 	_resinBallModel->initObserver(_resinBallView);
 }
-void GamePlayController::initInsect(){
-	
-	/*	_insectModel=GameInsectModel::create(_world);
-		_insectModel->retain();
-		addChild(_insectModel,0);
-		_insects.push_back(_insectModel);
-
-		GameInsectView *_insectView1=GameInsectView::CREATE(this,_insectModel);
-		_insectView1->retain();
-		_insectView1->autorelease();
-		addChild(_insectView1,0);
-		
-		_insectModel->initObserver(_insectView1);
-		*/
-		for(int i=0;i<5;i++){
-			GameInsectModel* insectm=GameInsectModel::create(_world);
-			insectm->retain();
-			insectm->autorelease();
+void GamePlayController::addInsect(){
+	BaseInsect* insectm=MantisInsect::create(_world);
 			addChild(insectm,0);
 
 			GameInsectView* insectv=GameInsectView::CREATE(this,insectm);
-			insectv->retain();
-			insectv->autorelease();
 			addChild(insectv,0);
 
 			insectm->initObserver(insectv);
 			_insects.push_back(insectm);
+}
+void GamePlayController::initInsect(){
+		for(int i=0;i<2;i++){
+			this->addInsect();
 		}
+		
 }
 
 bool GamePlayController::init(){
@@ -81,19 +75,24 @@ bool GamePlayController::init(){
 		srand(time(NULL));//¸øËæ»úÊıÉèÖÃÖÖ×Ó
 		_world=B2EasyBox2D::createWorld(b2Vec2(0,0));
 		B2DebugDrawLayer *dDraw=B2DebugDrawLayer::create(_world,PTM_RATIO);
-		addChild(dDraw,9999);
+		//addChild(dDraw,9999);
 
-		myContactListener* contactListener=new myContactListener();
+		contactListener=new myContactListener();
 		_world->SetContactListener(contactListener);//Åö×²¼ì²â¼àÌı
-
+		
 		this->setAccelerometerEnabled(true);//ÉèÖÃÔÊĞíÖØÁ¦¸ĞÓ¦
 
+		int consumeResin=CCUserDefault::sharedUserDefault()->getIntegerForKey(CONSUME_RESIN,10);
+		int totalResin=CCUserDefault::sharedUserDefault()->getIntegerForKey(RESIN_VOLUME,0);
+		CCUserDefault::sharedUserDefault()->setIntegerForKey(RESIN_VOLUME,totalResin-consumeResin);
+		CCUserDefault::sharedUserDefault()->flush();
 		this->initResinBall();//³õÊ¼»¯Ê÷Ö¬ÇòÄ£ĞÍ¼°ÊÓÍ¼
 		this->createWrapWall();//´´½¨ËÄÖÜÇ½ºÍÒ»Ğ©¾²Ì¬ÕÏ°­
+		this->createEnvir();//´´½¨»·¾³
 		this->initInsect();
 
 		//³õÊ¼»¯µĞÈË
-		for(unsigned int i=0;i<3;i++){
+	/*	for(unsigned int i=0;i<3;i++){
 			Enemy* enemy=Enemy::create(_world);
 			enemy->retain();
 			enemy->autorelease();
@@ -104,15 +103,17 @@ bool GamePlayController::init(){
 			addChild(enemyView);
 			enemy->initObserver(enemyView);
 			enemys.push_back(enemy);
-		}
+		}*/
 
 		//³õÊ¼»¯°´Å¥²ã
 		buttonLayer=StaticLayer::create();
+		buttonLayer->retain();
 		buttonLayer->initControlSlider(_resinBallModel);//µ÷ÊÔÓÃ£¬ÊÖ»úÉÏÍ¨¹ı»¬¶¯Ìõ¿ØÖÆÊ÷Ö¬ÇòµÄÖØÁ¦ºÍÄ¦²ÁÏµÊı
 		addChild(buttonLayer,10);
 
 		//³õÊ¼»¯µØÍ¼²ã
 		mapLayer=MapLayer::create();
+		mapLayer->retain();
 		addChild(mapLayer,-10);
 
 		buttonLayer->innerStage=mapLayer->innerStage;//µ÷ÊÔÓÃ
@@ -136,29 +137,64 @@ void GamePlayController::onExitTransitionDidStart(){
 void GamePlayController::onExit(){
 	CCLayer::onExit();
 }
+
+
+
+void GamePlayController::createEnvir(){
+	CCSprite* sp=CCSprite::create("petri_dish.png");
+	sp->setPosition(ccp(900,300));
+	this->addChild(sp,0,TAG_WALL);
+	b2Body* petri_dish=B2EasyBox2D::createCircle(_world,900,300,140,sp);
+	b2Fixture* fixture=petri_dish->GetFixtureList();
+	fixture->SetDensity(100);
+	fixture->SetFriction(1);
+	fixture->SetRestitution(0.2);
+
+}
  void GamePlayController::createWrapWall(){
 	 CCSize winSize=CCDirector::sharedDirector()->getWinSize();
+	 winSize=CCSizeMake(winSize.width/PTM_RATIO,winSize.height/PTM_RATIO);
+	 b2Vec2 leftTop=b2Vec2(-winSize.width*(MAP_SCALE-1)*0.5f,winSize.height+(MAP_SCALE-1)*0.5f*winSize.height);
+	 b2Vec2 leftBottom=b2Vec2(leftTop.x,-(MAP_SCALE-1)*0.5f*winSize.height);
+	 b2Vec2 rightTop=b2Vec2(winSize.width+winSize.width*(MAP_SCALE-1)*0.5f,leftTop.y);
+	 b2Vec2 rightBottom=b2Vec2(rightTop.x,leftBottom.y);
 
 	 CCNode* userDataWall=CCNode::create();
 	 userDataWall->setTag(TAG_WALL);
-	 userDataWall=NULL;
-	 
-	 b2Body* wall=B2EasyBox2D::createStaticBox(_world,winSize.width/2,winSize.height+(MAP_SCALE-1)*0.5f*winSize.height
-		 ,winSize.width*MAP_SCALE,PTM_RATIO);//ÉÏ
+	 this->addChild(userDataWall);
 
-	 B2EasyBox2D::createStaticBox(_world,-(MAP_SCALE-1)*0.5f*winSize.width,winSize.height/2,
-		 PTM_RATIO,winSize.height*MAP_SCALE);//×ó
-	 B2EasyBox2D::createStaticBox(_world,winSize.width+(MAP_SCALE-1)*0.5f*winSize.width,winSize.height/2,
-		 PTM_RATIO,winSize.height*MAP_SCALE);//ÓÒ
-	 B2EasyBox2D::createStaticBox(_world,winSize.width/2,-(MAP_SCALE-1)*0.5f*winSize.height,
-		 winSize.width*MAP_SCALE,PTM_RATIO);//ÏÂ
-	
-	//´´½¨¾²Ì¬ÕÏ°­Îï
-	//B2EasyBox2D::createBox(_world,100,100,50,150,true,userDataWall,0,0,0);
-//	B2EasyBox2D::createBox(_world,600,100,50,50,true,userDataWall,0,0,0);
-	//bodys.push_back(B2EasyBox2D::createCircle(_world,300,300,100,true,userDataWall,0,0,0));
-	//bodys.push_back(B2EasyBox2D::createCircle(_world,500,500,50,true,userDataWall,0,0,0));
+	 b2BodyDef bodyDef;
+	 bodyDef.position.Set(0,0);
+	 bodyDef.userData=userDataWall;
+	 bodyDef.type=b2_staticBody;
+	 b2Body* wall=_world->CreateBody(&bodyDef);
+
+	 b2EdgeShape edgeShape; 
+	 edgeShape.Set(leftBottom,rightBottom);  //ÏÂ
+	 
+	 b2FixtureDef fixtureDef;
+	 fixtureDef.shape = &edgeShape;
+	 wall->CreateFixture(&fixtureDef);
+	  
+	 //ÉÏ
+	 edgeShape.Set(leftTop,rightTop);
+	 wall->CreateFixture(&fixtureDef);
+	 //×ó
+	 edgeShape.Set(leftTop,leftBottom);
+	 wall->CreateFixture(&fixtureDef);
+	 //ÓÒ
+	 edgeShape.Set(rightTop,rightBottom);
+	 wall->CreateFixture(&fixtureDef);
 }
+ void GamePlayController::updateBox2DUserData(){
+	 for(b2Body* body=_world->GetBodyList();body!=NULL;body=body->GetNext()){
+		 CCNode* sprite=(CCNode*)body->GetUserData();
+		 if(sprite!=NULL&&sprite->getTag()==TAG_WALL){
+			 sprite->setPosition(body->GetWorldCenter().x*PTM_RATIO,body->GetWorldCenter().y*PTM_RATIO);
+			 sprite->setRotation(CC_RADIANS_TO_DEGREES(body->GetAngle()));
+		 }
+	 }
+ }
 void GamePlayController::draw(){
 	
 	CCSize winSize=CCDirector::sharedDirector()->getWinSize();
@@ -194,6 +230,13 @@ CCScene* GamePlayController::scene(){
     return scene;
 }
 
+void GamePlayController::updateInsectNumber(){
+	if(_insects.size()>MIN_NUM) return;CCLog("fsdf");
+	if(CCRANDOM_0_1()>0.8){//0.8µÄ¸ÅÂÊ
+		this->addInsect();
+	}
+}
+
 void GamePlayController::update(float dt){
 	//It is recommended that a fixed time step is used with Box2D for stability
 	//of the simulation, however, we are using a variable time step here.
@@ -204,6 +247,7 @@ void GamePlayController::update(float dt){
 	// generally best to keep the time step and iterations fixed.
 //	world->Step(dt, velocityIterations, positionIterations);
 	this->step(dt);
+	this->updateBox2DUserData();
 	for(unsigned int i=0;i<_insects.size();i++){
 		_insects[i]->update(dt);
 	}
@@ -222,6 +266,8 @@ void GamePlayController::update(float dt){
 	//±£³Ö°´Å¥Î»ÖÃ²»±ä
 	buttonLayer->keepStill(last);
 	buttonLayer->setResinCount(_resinBallModel);
+
+	this->updateInsectNumber();
 	//Iterate over the bodies in the physics world
 	//CCLog("update:%f",dt);
 
@@ -247,18 +293,20 @@ void GamePlayController::step(float dt){//box2dÊÀ½çÊ±¼ä²½ Óë cocos2d-x¸üĞÂÆµÂÊ µ
 }
 //Ã¿Ò»¸öÊ±¼ä²½ºóĞèÒªÖ´ĞĞµÄ²Ù×÷
 void GamePlayController::afterStep(float dt){
-	vector<GameInsectModel* >::iterator it = _insects.begin(); 
+	vector<BaseInsect* >::iterator it = _insects.begin(); 
 	while (it != _insects.end()) { 
-		GameInsectModel* insect=(GameInsectModel*)*it; //CCLog("%d",insect->getAlive());       
+		BaseInsect* insect=(BaseInsect*)*it; //CCLog("%d",insect->getAlive());       
 		if (!insect->getAlive()) { 
 			insect->clean();
 			it = _insects.erase(it);    
 			CCLog("after delete insect No.:",_insects.size());
+			amberCount++;
 		} else {	
-			insect->handleContact();
+			//insect->handleContact();
 			it++;    
 		}
 	}
+	MessageVector::handleMessage();
 	for(unsigned int i=0;i<enemys.size();i++){
 		enemys[i]->eatResin(_resinBallModel,dt);
 	}
@@ -272,11 +320,18 @@ void GamePlayController::checkGameOverAndDo(){
 	if(_resinBallModel->usedUp()||_insects.size()==0){
 		//CCDelayTime* delay=CCDelayTime::create(1);
 		
-		this->menuGoBackCallback(this);
+		this->menuGameOverCallback(this);
 	}
 }
 void GamePlayController::menuGoBackCallback(CCObject* pSender){
 	CCDirector::sharedDirector()->replaceScene(CCTransitionCrossFade::create(1,GameMenuController::scene()));
+}
+void GamePlayController::menuGameOverCallback(CCObject* pSender){
+	CCUserDefault::sharedUserDefault()->setIntegerForKey(GET_AMBER,amberCount);
+	CCUserDefault::sharedUserDefault()->setIntegerForKey(GET_SCORE,amberCount*100+CCRANDOM_0_1()*10);
+	CCUserDefault::sharedUserDefault()->setIntegerForKey(GET_MONEY,199);
+	CCUserDefault::sharedUserDefault()->flush();
+	CCDirector::sharedDirector()->replaceScene(CCTransitionCrossFade::create(1,GameOverController::scene()));
 }
 
 void GamePlayController::testViewDelegate(){

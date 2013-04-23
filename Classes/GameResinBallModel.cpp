@@ -6,7 +6,7 @@
 
 USING_NS_CC;
 
-const int Origin_blood=300;
+const int Origin_blood=100;
 const int tag_PolySprite=123;//¶à±ßÐÎÍ¼Æ¬µÄtagË÷Òý
 //È«¾Öº¯Êý
 //¸ù¾ÝÁ½¸öbodyºÍÒ»¸ö½Úµã´´½¨Ò»¸öÐý×ª¹Ø½Ú²¢·µ»Ø
@@ -43,10 +43,12 @@ GameResinBallModel::GameResinBallModel():_ballBody(NULL),_world(NULL)
 
 GameResinBallModel::~GameResinBallModel()
 {
+	this->clean();
 	_world=NULL;
 }
 void GameResinBallModel::clean(){
-	
+	_blockJoints.clear();
+	_blocks.clear();
 }
 //³õÊ¼»¯ÊµÐÄÇòµÄ¸ÕÌå
 void GameResinBallModel::initBallBody(float32 radius){
@@ -152,6 +154,7 @@ void GameResinBallModel::createCircleBridge(int number,float32 radius){//¸ù¾ÝÔ²»
 
 	CCTexture2D *texture=CCTextureCache::sharedTextureCache()->addImage("amber_wai.png");
 	CCSprite* block=CCSprite::createWithTexture(texture,CCRectMake(0,0,_currentBlockWidth,_currentBlockHeight));
+	block->setTag(TAG_BLOCK);
 	block->setPosition(ccpSub(ccp(bx,by),this->getPosition()));
 	block->setRotation(-angle*180/M_PI);
 	//CCLog("sprite:%f,%f",block->getPositionX(),block->getPositionY());
@@ -175,6 +178,7 @@ void GameResinBallModel::createCircleBridge(int number,float32 radius){//¸ù¾ÝÔ²»
 
 		//´´½¨ÓÐ·½ÏòµÄ¾ØÐÎ¸ÕÌå£¬ºÏ³É×ÜµÄÔ²ÐÎ¸ÕÌå
 	CCSprite* block=CCSprite::createWithTexture(texture,CCRectMake(0,0,_currentBlockWidth,_currentBlockHeight));
+	block->setTag(TAG_BLOCK);
 	block->setPosition(ccpSub(ccp(bx,by),this->getPosition()));
 	block->setRotation(-angle*180/M_PI);
 	addChild(block,10);
@@ -275,9 +279,10 @@ void GameResinBallModel::initPolygonTexture(){
 		const int count=_blockJoints.size();
 		const int indexCount=(count-2)*3;
 
+		const char* fileName="nei.png";
 		float width=200;//Í¼Æ¬¿í¶È
 		float height=200;//Í¼Æ¬¸ß¶È
-		CCSprite* p=CCSprite::create("nei.png");
+		CCSprite* p=CCSprite::create(fileName);
 		width=p->getContentSize().width;
 		height=p->getContentSize().height;
 		CCPoint points[100];
@@ -300,7 +305,7 @@ void GameResinBallModel::initPolygonTexture(){
 			index[k++]=i;
 			index[k++]=i+1;
 		}
-		cPolySprite *csp = cPolySprite::create("nei.png", points, count, index);
+		cPolySprite *csp = cPolySprite::create(fileName, points, count, index);
 		csp->setTag(tag_PolySprite);
 		this->addChild(csp);
 		csp->setAnchorPoint(ccp(0.5,0.5));
@@ -309,6 +314,8 @@ void GameResinBallModel::initPolygonTexture(){
 }
 
 void GameResinBallModel::shrinkResinBallBody(float32 scale){
+//	cPolySprite* polySp=(cPolySprite*)this->getChildByTag(tag_PolySprite);
+//	polySp->runAction(CCShakyTiles3D::create(10,true,ccg(polySp->getContentSize().width,polySp->getContentSize().height),2));
 	_ballRadius*=scale;
 	//_world->DestroyBody(_ballBody);
 	_ballBody->GetFixtureList()->GetShape()->m_radius=_ballRadius/PTM_RATIO;
@@ -332,28 +339,6 @@ void GameResinBallModel::shrinkResinBallBody(float32 scale){
 	
 	CCLog("_ballRadius:%f",_ballRadius);
 	CCLog("_radius:%f",_radius);
-/*
-	vector<b2Vec2> anchors;
-	for(unsigned int i=0;i<_blocks.size();i++){
-		B2EasyBox2D::shrinkBox(_blocks[i],_currentBlockWidth,_currentBlockHeight,0.5f);
-
-		//¼ÆËãÃ¿¸öÐ¡·½¿éµÄÐÂµÄÖÐÐÄµã×ø±ê
-		b2Vec2 currentPosition=_blocks[i]->GetWorldCenter();
-		b2Vec2 center=b2Vec2(getPositionX()/PTM_RATIO,getPositionY()/PTM_RATIO);
-		b2Vec2 newPosition=b2Vec2(center.x+(currentPosition.x-center.x)*scale,center.y+(currentPosition.y-center.y)*scale);
-		_blocks[i]->SetTransform(newPosition,0);
-
-		b2Vec2 position=b2Vec2(center.x+(_blockJoints[i]->GetAnchorA().x-center.x)*scale,
-			center.y+(_blockJoints[i]->GetAnchorA().y-center.y)*scale);
-		anchors.push_back(position);
-	}
-	for(unsigned int i=0;i<_blockJoints.size();i++){
-		int nexti=i+1;
-		if(nexti==_blockJoints.size()) nexti=0;
-		//b2Joint* newJoint=createRevoluteJoint(_world,_blocks[i],_blocks[nexti],anchors[i]);
-		//_world->DestroyJoint(_blockJoints[i]);
-		//_blockJoints[i]=newJoint;
-	}*/
 }
 void GameResinBallModel::shrinkResinByBlood(){
 	countBlood=(int)blood%(Origin_blood/3);
@@ -386,10 +371,10 @@ void GameResinBallModel::update(float dt){
 	this->shrinkResinByBlood();
 }
 
-void GameResinBallModel::attackInsect(GameInsectModel* insect,float reducedBlood){
-	if(insect->attacked(reducedBlood)){
+void GameResinBallModel::attackInsect(BaseInsect* insect,float reducedBlood){
+	/*if(insect->attacked(reducedBlood)){
 		coveredInsect=NULL;
-	}else blood-=reducedBlood;
+	}else blood-=reducedBlood;*/
 }
 bool GameResinBallModel::usedUp(){
 	return blood<=0;
@@ -397,7 +382,7 @@ bool GameResinBallModel::usedUp(){
 //
 //Óë³æ×ÓµÄÅö×²¼ì²â
 //
-void GameResinBallModel::beginContact(GameInsectModel* insect){
+void GameResinBallModel::beginContact(BaseInsect* insect){
 	coveredInsect=insect;
 	//isCoverInsect=true;
 }

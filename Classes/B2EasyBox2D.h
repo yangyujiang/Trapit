@@ -44,7 +44,7 @@ public:
 	static void shrinkBox(b2Body* body,float32 width,float32 height,float32 scale);
 
 	static void createFixture(b2Body* body,float posX,float posY,float );
-	static void createWrapWall(b2World* world);//创建四周边界墙
+	//static void createWrapWall(b2World* world);//创建四周边界墙
 
 };
 

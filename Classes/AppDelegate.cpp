@@ -6,6 +6,7 @@
 #include "GameMenuController.h"
 #include "GameWelcomeController.h"
 #include "GameCollectionController.h"
+#include "GameOverController.h"
 #include "SmartRes.h"
 
 using namespace CocosDenshion;
@@ -69,9 +70,10 @@ bool AppDelegate::applicationDidFinishLaunching()
     pDirector->setAnimationInterval(1.0 / 60);
 
     // create a scene. it's an autorelease object
-    //CCScene *pScene = GamePlayController::scene();
+   //CCScene *pScene = GamePlayController::scene();
 	CCScene *pScene = GameMenuController::scene();pScene->setTag(1111);
    // CCScene *pScene = GameWelcomeController::scene();
+	 //CCScene *pScene = GameOverController::scene();
 	//CCScene *pScene = GameCollectionController::scene();
 	//CCScene *pScene = TableViewTestLayer::scene();
 	/*CCScene *pScene = CCScene::create();

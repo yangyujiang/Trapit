@@ -16,8 +16,10 @@ bool ListViewLayer::init()
 
 	return bRet;
 }
-void ListViewLayer::initList(int width,int height){
+void ListViewLayer::initList(int width,int height,int count,CCSize cellSize){
 	CCSize winSize=CCDirector::sharedDirector()->getWinSize();
+	this->count=count;
+	this->cellSize=cellSize;
 
 		CCTableView* pTableView = CCTableView::create(this, CCSizeMake(width, height));
 		pTableView->setDirection(kCCScrollViewDirectionVertical);
@@ -37,7 +39,7 @@ void ListViewLayer::tableCellTouched(CCTableView* table, CCTableViewCell* cell)
 
 CCSize ListViewLayer::cellSizeForTable(CCTableView *table)
 {
-    return CCSizeMake(960, 120);
+    return cellSize;
 }
 
 CCTableViewCell* ListViewLayer::tableCellAtIndex(CCTableView *table, unsigned int idx)
@@ -169,7 +171,7 @@ CCTableViewCell* ListViewLayer::tableCellAtIndex(CCTableView *table, unsigned in
 
 unsigned int ListViewLayer::numberOfCellsInTableView(CCTableView *table)
 {
-    return 20;
+    return count;
 }
 
 
@@ -183,4 +185,52 @@ void ListViewLayer::scrollViewDidZoom(CCScrollView *view)
 
 unsigned int ListViewLayer::getIdx(){
 	return _idx;
+}
+
+
+//
+//ListMapVetical.cpp
+
+CCTableViewCell* ListMapVertical::tableCellAtIndex(CCTableView *table,unsigned int idx){
+	_idx=idx;
+	CCLog("_idx:%d",idx);
+    CCString *pString = CCString::createWithFormat("%d", idx);
+	
+    CCTableViewCell *pCell = table->dequeueCell();
+    if (!pCell) {
+        pCell = new CCTableViewCell();
+        pCell->autorelease();
+
+        CCSprite *sprite;
+		switch(idx){
+		case 0:sprite= CCSprite::create("level_1.png");break;
+		case 1:sprite= CCSprite::create("level_2.png");break;
+		case 2:sprite= CCSprite::create("level_3.png");break;
+		default:sprite= CCSprite::create("amber_1.png");break;
+		}
+		sprite->setTag(666);
+        sprite->setAnchorPoint(ccp(0,0));
+		sprite->setPosition(ccp(0,0));
+        pCell->addChild(sprite);
+    }
+    else
+    {
+		pCell->removeChildByTag(666,true);
+       
+		
+        CCSprite *sprite;
+		switch(idx){
+		case 0:sprite= CCSprite::create("level_1.png");break;
+		case 1:sprite= CCSprite::create("level_2.png");break;
+		case 2:sprite= CCSprite::create("level_3.png");break;
+		default:sprite= CCSprite::create("amber_1.png");break;
+		}
+		sprite->setTag(666);
+        sprite->setAnchorPoint(ccp(0,0));
+		sprite->setPosition(ccp(0,0));
+        pCell->addChild(sprite);
+		
+    }
+
+    return pCell;
 }

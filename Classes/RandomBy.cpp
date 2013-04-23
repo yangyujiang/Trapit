@@ -164,7 +164,7 @@ void CCStepBack::startWithTarget(CCNode *pTarget)
     m_startPosition = pTarget->getPosition();
 	
 	double degree=(-pTarget->getRotation())/180*M_PI;
-	double distance=m_velocity*0.3*m_fDuration;//原有速度的0.3倍后退
+	double distance=m_velocity*0.6*m_fDuration;//原有速度的0.6倍后退
 	//CCLog("%f,%f",distance,degree);
 	m_delta = ccp(distance*cos(degree), distance*sin(degree));
 }
@@ -177,9 +177,105 @@ void CCStepBack::update(float time)
     if (m_pTarget)
     {
 		CCPoint newPosition=ccp(m_startPosition.x - m_delta.x*time ,m_startPosition.y - m_delta.y*time);
-		m_pTarget->setPosition(newPosition);		
+		m_pTarget->setPosition(newPosition);
     }else CCLog("target is NULL");
 }  
+
+
+
+
+
+
+
+//
+//CCFollowSprite.cpp
+//
+CCFollowSprite* CCFollowSprite::create(float duration,  const float velocity,CCNode* target)
+{
+    CCFollowSprite *pfollow = new CCFollowSprite();
+    pfollow->initWithDuration(duration, velocity,target);
+    pfollow->autorelease();
+
+    return pfollow;
+}
+
+bool CCFollowSprite::initWithDuration(float duration,  const float velocity,CCNode* target)
+{
+    if (CCActionInterval::initWithDuration(duration))
+    {
+        m_velocity = velocity;
+		m_followTarget=target;
+        return true;
+    }
+
+    return false;
+}
+
+CCObject* CCFollowSprite::copyWithZone(CCZone *pZone)
+{
+    CCZone* pNewZone = NULL;
+    CCFollowSprite* pCopy = NULL;
+    if(pZone && pZone->m_pCopyObject) 
+    {
+        //in case of being called at sub class
+        pCopy = (CCFollowSprite*)(pZone->m_pCopyObject);
+    }
+    else
+    {
+        pCopy = new CCFollowSprite();
+        pZone = pNewZone = new CCZone(pCopy);
+    }
+
+    CCActionInterval::copyWithZone(pZone);
+
+    pCopy->initWithDuration(m_fDuration, m_velocity,m_followTarget);
+
+    CC_SAFE_DELETE(pNewZone);
+    return pCopy;
+}
+
+float getDDirection(CCPoint p1,CCPoint p2){
+	float angle=asin((p2.x-p1.x)/(ccpDistance(p1,p2)))*180.f/M_PI;
+	if(p1.x<=p2.x&&p1.y>=p2.y) angle=180-angle;
+	else if(p1.x>=p2.x&&p1.y>=p2.y) angle=-180-angle;
+
+	return angle;
+}
+void CCFollowSprite::startWithTarget(CCNode *pTarget)
+{
+	//CCLog("CCFollowSprite:startWithTarget");
+    CCActionInterval::startWithTarget(pTarget);
+	this->m_startPos=pTarget->getPosition();
+	m_timeCount=0;
+}
+void CCFollowSprite::update(float time)
+{
+    if (m_pTarget)
+    {
+		float duration=(time-m_timeCount)*this->m_fDuration;
+		m_timeCount=time;
+	   CCPoint locPos=m_pTarget->getPosition();
+	   float degree=getDDirection(locPos,m_followTarget->getPosition());
+		m_pTarget->setRotation(degree-90);
+		float angle=CC_DEGREES_TO_RADIANS(degree);
+		CCPoint delta=ccp(m_velocity*sin(angle)*duration,m_velocity*cos(angle)*duration);
+		CCPoint newPos=ccpAdd(locPos,delta);
+		m_pTarget->setPosition(newPos);
+		
+    }else CCLog("target is NULL");
+}  
+
+
+
+
+
+
+
+
+
+
+
+
 
 //
 //TuoyuanBy

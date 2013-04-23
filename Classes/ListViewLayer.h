@@ -10,8 +10,10 @@ class ListViewLayer : public cocos2d::CCLayer, public cocos2d::extension::CCTabl
 {
 protected:
 	CC_PROPERTY_READONLY(unsigned int,_idx,Idx);
+	unsigned int count;
+	CCSize cellSize;
 public:
-	ListViewLayer():_idx(0){};
+	ListViewLayer():_idx(0),count(20),cellSize(CCSizeMake(0,0)){};
     virtual bool init();  
     
     virtual void scrollViewDidScroll(cocos2d::extension::CCScrollView* view);
@@ -28,7 +30,16 @@ public:
     virtual unsigned int numberOfCellsInTableView(cocos2d::extension::CCTableView *table);
 
     CREATE_FUNC(ListViewLayer);
-	void initList(int width,int height);
+	void initList(int width,int height,int count,CCSize cellSize);
+};
+
+//ListMapVertical.h
+class ListMapVertical:public ListViewLayer{
+public:
+    virtual cocos2d::extension::CCTableViewCell* tableCellAtIndex(cocos2d::extension::CCTableView *table, unsigned int idx);
+	
+	CREATE_FUNC(ListMapVertical);
+protected:
 };
 
 #endif 

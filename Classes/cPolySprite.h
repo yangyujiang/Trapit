@@ -4,6 +4,8 @@
 
 #include "cocos2d.h"
 
+USING_NS_CC;
+
 //多边形精灵
 class cPolySprite : public cocos2d::CCSprite
 {
@@ -30,6 +32,7 @@ private:
     void translate(const cocos2d::CCPoint&);
     void drawPoly();
     void releasePoly();
+	bool retainPoly(int verCnt);
     
 private:
     //多边形顶点
@@ -43,6 +46,29 @@ private:
     //顶点数目
     int verCnt_;
     
+};
+
+
+////
+// BYGraySprite.h
+// Demo
+//
+// Created by Yanghui Liu on 12-11-2.
+// Copyright (c) 2012年 BoyoJoy. All rights reserved.
+//
+
+
+class BYGraySprite : public CCSprite{
+
+
+public:
+ BYGraySprite();
+ virtual ~BYGraySprite();
+ static BYGraySprite* create(const char* pszFileName);
+ bool initWithTexture(CCTexture2D* pTexture, const CCRect& tRect);
+ virtual void draw();
+
+
 };
 
 #endif

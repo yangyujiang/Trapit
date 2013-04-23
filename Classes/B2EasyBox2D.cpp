@@ -41,7 +41,7 @@ b2World* B2EasyBox2D::createWorld(b2Vec2 gravity){
 	_world->SetAllowSleeping(doSleep);
 	
 	_world->SetAutoClearForces(false);
-	_world->SetAllowSleeping(true);//设置世界是否允许睡眠
+	_world->SetAllowSleeping(false);//设置世界是否允许睡眠
 
 	return _world;
 }
@@ -78,7 +78,7 @@ b2Body* B2EasyBox2D::createStaticBox(b2World* world,float posX,float posY,float 
 	fixtureRequest.isSensor=isSensor;
 	if(filter!=NULL) fixtureRequest.filter=*filter;
 	b2Fixture *fixture=body->CreateFixture(&fixtureRequest);//创建定制器
-
+	
 	return body;
 
 }
@@ -89,15 +89,14 @@ b2Body* B2EasyBox2D::createBox(b2World* world,float posX,float posY,float boxWid
 	bodyRequest.position.Set(posX/PTM_RATIO,posY/PTM_RATIO);
 	bodyRequest.userData = userData;
 	b2Body *body=world->CreateBody(&bodyRequest);
-
 	b2PolygonShape shapeRequest;
 	shapeRequest.SetAsBox(boxWidth/2.0f/PTM_RATIO,boxHeight/2.0f/PTM_RATIO);
 
 	b2FixtureDef fixtureRequest;
 	fixtureRequest.shape=&shapeRequest;
 	fixtureRequest.density=1;
-	fixtureRequest.friction=0.3f;
-	fixtureRequest.restitution=0.3f;
+	fixtureRequest.friction=0.f;
+	fixtureRequest.restitution=1.f;
 	fixtureRequest.isSensor=isSensor;
 	if(filter!=NULL) fixtureRequest.filter=*filter;
 	b2Fixture *fixture=body->CreateFixture(&fixtureRequest);//创建定制器
@@ -195,7 +194,7 @@ void B2EasyBox2D::shrinkBox(b2Body* body,float32 width,float32 height,float32 sc
 	body->CreateFixture(&fixtureRequest);
 }
 
-
+/*
 void B2EasyBox2D::createWrapWall(b2World* _world){
 	
 	CCSize winSize=CCDirector::sharedDirector()->getWinSize();
@@ -209,7 +208,7 @@ void B2EasyBox2D::createWrapWall(b2World* _world){
 	B2EasyBox2D::createStaticBox(_world,600,100,50,50);
 	B2EasyBox2D::createStaticBox(_world,300,300,100,100);
 	B2EasyBox2D::createStaticCircle(_world,500,500,50);
-}
+}*/
 
 /**
 		 * 根据一组顶点数据，创建多边形刚体，可以是顺时针绘制，也可以逆时针绘制，但不能出现交叉

@@ -1,6 +1,5 @@
 #include "Constant.h"
 #include "SkillSlotAdapter.h"
-#include "InsectAction.h"
 #include "B2EasyBox2D.h"
 #include "RandomBy.h"
 

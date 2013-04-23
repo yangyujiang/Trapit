@@ -1,9 +1,8 @@
-#include "Constant.h"
 #include "Amber.h"
-#include "InsectAction.h"
 #include "B2EasyBox2D.h"
 #include "RandomBy.h"
 #include "sqlite3.h"
+#include "Constant.h"
 
 USING_NS_CC;
 
@@ -27,6 +26,7 @@ Amber::Amber()
 
 Amber::~Amber()
 {
+	AMBERS.clear();
 }
 
 bool Amber::init(){

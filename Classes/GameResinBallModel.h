@@ -46,7 +46,7 @@ protected:
 	float attack;//攻击力（每秒）
 	//float coverInsectTimeCount;//覆盖住虫子的时间累加
 	//float isCoverInsect;//是否碾住虫子？
-	GameInsectModel* coveredInsect;//被覆盖的虫子
+	BaseInsect* coveredInsect;//被覆盖的虫子
 
 public:
 	float blood;
@@ -75,11 +75,11 @@ public:
 	void initObserver(GameModelDelegate* pDelegate);//初始化观察者，一般为与Model对应的View
 
 public:
-	void attackInsect(GameInsectModel* insect,float dt);//攻击到虫子
+	void attackInsect(BaseInsect* insect,float dt);//攻击到虫子
 	void myDraw();//调试用
 	
 public:
-	void beginContact(GameInsectModel* insect);
+	void beginContact(BaseInsect* insect);
 	void endContact();
 	void handleContactWithInsect(float dt);//处理与虫子的碰撞事件
 };

@@ -9,6 +9,8 @@
 USING_NS_CC;
 USING_NS_CC_EXT;
 
+
+
 class GameMenuController :public CCLayer
 {
 protected:
@@ -17,9 +19,16 @@ protected:
 	panel_yellow,
 	panel_green,
 	panel_blue,
-}curPanel;
+	}curPanel;
+	enum FocusView{
+		resin=0,
+		map,
+	}focusView;
 	CCSize winSize;
 	CCScrollView* scrollView;
+	CCMenuItem* btn_toleft;
+	CCMenuItem* btn_toright;
+	CCLayer* leftTopPanel;
 	float countDown;//倒计时
 	char *str_time;//倒计时显示的字符串
 	CCLabelBMFont *ttf_clock;//倒计时Label
@@ -36,6 +45,12 @@ protected:
 	bool isSliding;//是否正在滑动滑动条，调整浓度
 	int slideStart;//滑动条初始位置
 	int slideEnd;//滑动条最远可滑动
+
+	CCSprite* slider;
+	CCSprite* slide_water;
+	CCSprite* slide_resin;
+
+	bool needToChange;//是否需要转换视角，从调树脂浓度到选择场景地图，或者反过来
 
 	CCPoint startPoint;//开始点
 public:
@@ -59,10 +74,15 @@ public:
     void menuChooseResinCallback(CCObject* pSender);//点击树脂颜色选项卡回调
     void menuShopCallback(CCObject* pSender);//点击商店按钮回调
     void menuStartCallback(CCObject* pSender);//点击开始按钮回调
-	void menuWikiCallBack(CCObject* pSender);//点击百科按钮回调
+	void menuWikiCallback(CCObject* pSender);//点击百科按钮回调
+	void menuLevelSelectCallback(CCObject* pSender);//点击选场景按钮回调
+	void menuToLeftCallback(CCObject* pSender);//点击小箭头回调
+	void menuToRightCallback(CCObject* pSender);//点击小箭头回调
+
+	void afterShakeCallback(CCNode* pSender);
 
 	void step(float dt);
-
+	void updateSlideWater();
 
 	virtual bool ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent);
 	virtual void ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent);
@@ -74,7 +94,8 @@ public:
 	void adjustScrollView(float distance);
 
 	void initMapScrollView();//初始化右侧面板
-	void initLeftTable();//初始化左侧面板
+	CCLayer* initLeftTable();//初始化左侧面板
+	CCSprite* initRightTable();//初始化右侧面板
 	CCLayer* initLeftTopPanel();//初始化左上栏
 	CCLayer* initLeftMidPanel();//lefttable的中间部分
 	CCMenu* initLeftBottomdPanel();//lefttable的下方部分

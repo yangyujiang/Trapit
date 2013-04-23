@@ -42,6 +42,10 @@ public:
 
 };
 
+
+//
+//MapLayer.h
+//
 const float scaleVToMap=0.1f;//地板移动速度与地图移动速度的比例
 class MapLayer:public CCLayer
 {

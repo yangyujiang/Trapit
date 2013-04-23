@@ -57,6 +57,29 @@ public:
 
 };
 
+//CCFollowSprite.h
+class CCFollowSprite : public cocos2d::CCActionInterval
+{
+	protected:
+	CCNode* m_followTarget;
+	float m_velocity;
+	CCPoint m_startPos;
+	float m_timeCount;
+public:
+    /** initializes the action */
+    bool initWithDuration(float duration, const float velocity,CCNode* target);
+
+    virtual CCObject* copyWithZone(cocos2d::CCZone* pZone);
+    virtual void startWithTarget(cocos2d::CCNode *pTarget);
+    virtual void update(float time);
+	CCFollowSprite(){};
+
+public:
+    /** creates the action */
+    static CCFollowSprite* create(float duration,  const float velocity,CCNode* target);
+
+};
+
 
 // 定义一个结构来包含确定椭圆的参数   
 typedef struct _lrTuoyuanConfig {  

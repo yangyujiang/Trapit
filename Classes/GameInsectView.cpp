@@ -9,11 +9,12 @@ GameInsectView::GameInsectView():_insect(NULL),_insectModel(NULL),pViewDelegate(
 
 GameInsectView::~GameInsectView()
 {
+//	CC_SAFE_RELEASE(animation);
+	//CC_SAFE_RELEASE(animationAction);
 	CC_SAFE_RELEASE(_insect);
-//	CC_SAFE_RELEASE(_insectModel);
 }
 
-bool GameInsectView::init(GameViewDelegate* pViewDelegate,GameInsectModel* gameInsect){
+bool GameInsectView::init(GameViewDelegate* pViewDelegate,BaseInsect* gameInsect){
 	bool pRet=false;
 	do{ 
 		// 先调用超类的init方法
