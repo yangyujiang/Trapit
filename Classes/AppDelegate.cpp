@@ -15,10 +15,18 @@ USING_NS_CC;
 
 AppDelegate::AppDelegate()
 {
+	SimpleAudioEngine::sharedEngine()->preloadBackgroundMusic(MENU_MUSIC);
+	SimpleAudioEngine::sharedEngine()->preloadBackgroundMusic(GAME_MUSIC);
 }
 
 AppDelegate::~AppDelegate()
 {
+	CCLog("~AppDelegate");
+	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("buttons.plist");
+	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("menu.plist");
+	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("ambers.plist");
+	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("collections.plist");
+	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("menuMap.plist");
     SimpleAudioEngine::end();
 }
 
@@ -68,11 +76,15 @@ bool AppDelegate::applicationDidFinishLaunching()
 
     // set FPS. the default value is 1.0/60 if you don't call this
     pDirector->setAnimationInterval(1.0 / 60);
-
+	
+	CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("buttons.plist","buttons.png");
+		CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("menu.plist","menu.png");
+		CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("collections.plist","collections.png");
+	CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("menuMap.plist","menuMap.png");
     // create a scene. it's an autorelease object
    //CCScene *pScene = GamePlayController::scene();
-	CCScene *pScene = GameMenuController::scene();pScene->setTag(1111);
-   // CCScene *pScene = GameWelcomeController::scene();
+	//CCScene *pScene = GameMenuController::scene();pScene->setTag(1111);
+    CCScene *pScene = GameWelcomeController::scene();
 	 //CCScene *pScene = GameOverController::scene();
 	//CCScene *pScene = GameCollectionController::scene();
 	//CCScene *pScene = TableViewTestLayer::scene();

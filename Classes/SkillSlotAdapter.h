@@ -21,7 +21,9 @@ public:
 	virtual bool init();
 	CREATE_FUNC(SkillSlotAdapter);
 	
-	void addSkillIfOverLap(CCSprite* skill);
+	int addSkillIfOverLap(CCSprite* skill);
+
+	void exchangeIfExisted(unsigned int skillId);//若此技能已加入到技能框中，则删除
 };
 
 #endif //__SKILL_SLOT__

@@ -93,7 +93,6 @@ public:
 
 	void adjustScrollView(float distance);
 
-	void initMapScrollView();//初始化右侧面板
 	CCLayer* initLeftTable();//初始化左侧面板
 	CCSprite* initRightTable();//初始化右侧面板
 	CCLayer* initLeftTopPanel();//初始化左上栏

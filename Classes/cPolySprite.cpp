@@ -138,6 +138,8 @@ void cPolySprite::drawPoly()
     //根据索引draw三角形
     glDrawElements(GL_TRIANGLES, (verCnt_-2)*3, GL_UNSIGNED_SHORT, indices_);
     
+    CHECK_GL_ERROR_DEBUG();
+
     CC_INCREMENT_GL_DRAWS(1);
 }
 
@@ -151,9 +153,24 @@ void cPolySprite::releasePoly()
 
 void cPolySprite::draw(void)
 {
+	//CCSprite::draw();
     drawPoly();
 }
 
+
+MYCCSprite* MYCCSprite::create(const char* pszFileName){
+	 MYCCSprite *pSprite = new MYCCSprite();
+    if (pSprite && pSprite->initWithFile(pszFileName))
+    {
+        pSprite->autorelease();
+        return pSprite;
+    }
+    CC_SAFE_DELETE(pSprite);
+    return NULL;
+}
+void MYCCSprite::draw(){
+	CCSprite::draw();
+}
 
 
 //

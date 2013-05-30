@@ -1,4 +1,4 @@
-ï»¿#ifndef __GAME_COLLECTION_CONTROLLER_H__
+#ifndef __GAME_COLLECTION_CONTROLLER_H__
 #define __GAME_COLLECTION_CONTROLLER_H__
 
 #include "cocos2d.h"
@@ -11,7 +11,7 @@
 
 USING_NS_CC;
 
-const int TAG_LIST=100;//åˆ—è¡¨å±‚
+const int TAG_LIST=100;//ÁĞ±í²ã
 const int TAG_CUR_AMBER=101;//
 const int TAG_CUR_AMBER_MOVABLE=102;
 const int TAG_MOVETO=103;//moveTo action
@@ -19,26 +19,28 @@ const int TAG_MOVETO=103;//moveTo action
 class GameCollectionController :public CCLayer
 {
 public:
-	//StaticLayer* buttonLayer;//æŒ‰é’®å±‚
 	int listWidth;
 	CCSize winSize;
 	unsigned int preIdx;
-	bool isMoving;//æ˜¯å¦æ­£åœ¨æ‹–åŠ¨ç¥ç€
+	bool isMoving;//ÊÇ·ñÕıÔÚÍÏ¶¯çúçê
 	CCSprite* amberAddLayer;
-	CCArray *_slots;//ä¸‰ä¸ªæŠ€èƒ½æ§½
-	SkillSlotAdapter* skillSlot;//æŠ€èƒ½æ§½é€‚é…ç±»å¯¹è±¡
+	CCArray *_slots;//Èı¸ö¼¼ÄÜ²Û
+	SkillSlotAdapter* skillSlot;//¼¼ÄÜ²ÛÊÊÅäÀà¶ÔÏó
+	CCSprite* movableSkill;//¿ÉÒÆ¶¯¼¼ÄÜ
 public:
 	GameCollectionController();
 	virtual ~GameCollectionController();
 	CREATE_FUNC(GameCollectionController);
 	virtual bool init();
-	//initåä¼šè°ƒç”¨; è‹¥æ˜¯åŠ äº†CCTransitionSceneåï¼Œåœ¨è¿‡æ¸¡åœºæ™¯å¼€å§‹åè°ƒç”¨  
+	//initºó»áµ÷ÓÃ; ÈôÊÇ¼ÓÁËCCTransitionSceneºó£¬ÔÚ¹ı¶É³¡¾°¿ªÊ¼ºóµ÷ÓÃ  
 	void onEnter();
 	void onEnterTransitionDidFinish();
-	//onEnterä»¥åå°†ä¼šè°ƒç”¨æ­¤æ–¹æ³• è‹¥ä½¿ç”¨CCTransitionScene,å°†ä¼šåœ¨è¿‡æ¸¡æ•ˆæœç»“æŸä»¥åè°ƒç”¨æ­¤æ–¹æ³• 
+	//onEnterÒÔºó½«»áµ÷ÓÃ´Ë·½·¨ ÈôÊ¹ÓÃCCTransitionScene,½«»áÔÚ¹ı¶ÉĞ§¹û½áÊøÒÔºóµ÷ÓÃ´Ë·½·¨ 
 	void onExitTransitionDidStart();
-	void onExit();// èŠ‚ç‚¹è°ƒç”¨deallocæ–¹æ³•ä¹‹å‰å°†ä¼šè°ƒç”¨æ­¤æ–¹æ³•   
-    //å¦‚æœä½¿ç”¨äº†CCTransitionScene,å°†ä¼šåœ¨è¿‡æ¸¡æ•ˆæœç»“æŸä»¥åè°ƒç”¨æ­¤æ–¹æ³•  
+	void onExit();// ½Úµãµ÷ÓÃdealloc·½·¨Ö®Ç°½«»áµ÷ÓÃ´Ë·½·¨   
+    //Èç¹ûÊ¹ÓÃÁËCCTransitionScene,½«»áÔÚ¹ı¶ÉĞ§¹û½áÊøÒÔºóµ÷ÓÃ´Ë·½·¨  
+	
+	virtual void  keyBackClicked();
 
 	virtual void update(float dt);
 	
@@ -50,10 +52,11 @@ public:
 	void menuGoBackCallback(CCObject* pSender);
 
 	CCSprite* initbottomLayer();
-	CCSprite* initTopTitle();//åˆå§‹åŒ–é¡¶éƒ¨æ ‡é¢˜æ 
-	CCSprite* initAmplificationIcon(const char *name,float amplification);//åˆå§‹åŒ–å¢å¹…å›¾æ ‡
+	CCSprite* initTopTitle();//³õÊ¼»¯¶¥²¿±êÌâÀ¸
+	void initSkillColumn();//³õÊ¼»¯¼¼ÄÜÕ¹Ê¾À¸
+	CCSprite* initAmplificationIcon(const char *name,float amplification);//³õÊ¼»¯Ôö·ùÍ¼±ê
 
-	CCSprite* getCurSprite(unsigned int idx);
+	static CCSprite* getCurSprite(unsigned int idx);
 
 public:
 	static CCScene* scene();

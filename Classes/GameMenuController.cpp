@@ -7,6 +7,9 @@
 #include "SmartRes.h"
 #include "ListViewLayer.h"
 #include "cPolySprite.h"
+#include "MyMath.h"
+#include "GlobalComponent.h"
+#include "SkillSlotAdapter.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)   
 #include "vld.h"   
@@ -29,18 +32,6 @@ const unsigned int INTERVAL=10*60;//*60;//倒计时设为10分钟
 
 const char *LAST_TIME="LAST_TIME";//key 上次退出游戏时系统时间
 
-long millisecondNow()  
-{ 
-struct cc_timeval now; 
-CCTime::gettimeofdayCocos2d(&now, NULL); 
-return (now.tv_sec * 1000 + now.tv_usec / 1000); 
-}
-long secondNow()  
-{ 
-struct cc_timeval now; 
-CCTime::gettimeofdayCocos2d(&now, NULL); 
-return (now.tv_sec); 
-}
 
 GameMenuController::GameMenuController():
 space(100),curPage(1),nCount(3),isScrolling(false),isSliding(false),
@@ -78,8 +69,6 @@ bool GameMenuController::init(){
     do{
         // 先调用超类的init方法
 		CC_BREAK_IF(! CCLayer::init());
-	CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("menu.plist","menu.png");
-	CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("menuMap.plist","menuMap.png");
 	winSize=CCDirector::sharedDirector()->getWinSize();
 	
 
@@ -100,31 +89,39 @@ bool GameMenuController::init(){
 	rightTable->setPosition(ccp(tableWidth,0));
 	focusView=resin;//当前聚焦在调节树脂浓度的页面
 
+	/*
+	CCSprite* p=CCSprite::create("HelloWorld.png");
+	p->setPosition(ccp(300,200));
+	this->addChild(p);
+	p->runAction(CCSpeed::create(CCMoveBy::create(10,ccp(700,500)),10));
+	*/
 	schedule(schedule_selector(GameMenuController::step), 1.0f);
 
-	this->setKeypadEnabled(true);
 
         pRet = true;
     }while(0);
     return pRet;
 }
 CCMenu* GameMenuController::initLeftBottomdPanel(){
-	CCSprite* goback=CCSprite::createWithSpriteFrameName("btn_goback.png");
-	CCMenuItem* pGoBackItem=CCMenuItemSprite::create(goback,goback,goback,this,menu_selector(GameMenuController::menuGoBackCallback));
+	//CCSprite* goback=CCSprite::createWithSpriteFrameName("btn_goback.png");
+	//CCMenuItem* pGoBackItem=CCMenuItemSprite::create(goback,goback,goback,this,menu_selector(GameMenuController::menuGoBackCallback));
+	CCMenuItem* pGoBackItem=GlobalComponent::createMenuItem(MENU_GOBACK,this,menu_selector(GameMenuController::menuGoBackCallback));
 	pGoBackItem->setAnchorPoint(ccp(0,0));
 	pGoBackItem->setScale(CCDirector::sharedDirector()->getContentScaleFactor());
 	pGoBackItem->setPosition(0,0);
 
-	CCSprite* collection=CCSprite::createWithSpriteFrameName("btn_collection.png");
-    CCMenuItem *pCollectItem = CCMenuItemSprite::create(collection,collection,collection,
-                                        this,
-                                        menu_selector(GameMenuController::menuCollectCallback));
+//	CCSprite* collection=CCSprite::createWithSpriteFrameName("btn_collection.png");
+ //   CCMenuItem *pCollectItem = CCMenuItemSprite::create(collection,collection,collection,
+   //                                     this,
+    //                                    menu_selector(GameMenuController::menuCollectCallback));
+	CCMenuItem* pCollectItem=GlobalComponent::createMenuItem(MENU_COLLECTION,this,menu_selector(GameMenuController::menuCollectCallback));
 	pCollectItem->setAnchorPoint(ccp(0.5,0));
 	pCollectItem->setScale(CCDirector::sharedDirector()->getContentScaleFactor());
 	pCollectItem->setPosition(tableWidth/2,0);
 
-	CCSprite* wiki=CCSprite::createWithSpriteFrameName("btn_wiki.png");
-	CCMenuItem *btnWiki=CCMenuItemSprite::create(wiki,wiki,wiki,this,menu_selector(GameMenuController::menuWikiCallback));
+//	CCSprite* wiki=CCSprite::createWithSpriteFrameName("btn_wiki.png");
+//	CCMenuItem *btnWiki=CCMenuItemSprite::create(wiki,wiki,wiki,this,menu_selector(GameMenuController::menuWikiCallback));
+	CCMenuItem* btnWiki=GlobalComponent::createMenuItem(MENU_WIKI,this,menu_selector(GameMenuController::menuWikiCallback));
 	btnWiki->setAnchorPoint(ccp(1,0));
 	btnWiki->setPosition(tableWidth,0);
 
@@ -195,6 +192,10 @@ CCLayer* GameMenuController::initLeftMidPanel(){//初始化左侧中间部分
 	panel_color->addChild(stars3);
 	
 	//技能槽
+	SkillSlotAdapter* skillSlot=SkillSlotAdapter::create();
+	skillSlot->setAnchorPoint(ccp(0.5,0.5));
+	skillSlot->setPosition(ccp(panelSize.width*23.5f/32,panelSize.height*3.5f/15));
+	panel_color->addChild(skillSlot);
 
 	//树脂、水浓度调整条
 	slide_resin=CCSprite::createWithSpriteFrameName("slide_resin.png");
@@ -236,9 +237,10 @@ CCLayer* GameMenuController::initLeftTopPanel(){
 	CCSprite* column_amber=CCSprite::createWithSpriteFrameName("col_resin.png");
 	CCSprite* column_clock=CCSprite::createWithSpriteFrameName("col_clock.png");
 
-	CCSprite* shop=CCSprite::createWithSpriteFrameName("btn_shop.png");
-	CCMenuItemSprite* btnShop=CCMenuItemSprite::create(shop,shop,shop,this,menu_selector(GameMenuController::menuShopCallback));
-	
+	//CCSprite* shop=CCSprite::createWithSpriteFrameName("btn_shop.png");
+	//CCMenuItemSprite* btnShop=CCMenuItemSprite::create(shop,shop,shop,this,menu_selector(GameMenuController::menuShopCallback));
+	CCMenuItem* btnShop=GlobalComponent::createMenuItem(MENU_SHOP,this,menu_selector(GameMenuController::menuShopCallback));
+
 	//左上面板大小
 	leftTopLayer->setContentSize(CCSizeMake(winSize.width,column_dollar->getContentSize().height));
 
@@ -248,7 +250,7 @@ CCLayer* GameMenuController::initLeftTopPanel(){
 	unsigned int dollar=CCUserDefault::sharedUserDefault()->getIntegerForKey(DOLLAR,ORIGIN_DOLLAR);
 	char str_dollar[10]={0};
 	sprintf(str_dollar,"%d",dollar);
-	CCLabelBMFont *ttf_dollar=CCLabelBMFont::create(str_dollar, "fonts/bitmapFontTest3.fnt");//CCLabelTTF::create(CCString::createWithFormat("498")->getCString(),"AppleGothic", 30.0);
+	CCLabelBMFont *ttf_dollar=CCLabelBMFont::create(str_dollar, FNTFILE);//CCLabelTTF::create(CCString::createWithFormat("498")->getCString(),"AppleGothic", 30.0);
 	ttf_dollar->setAnchorPoint(ccp(0.5,0.5));
 	ttf_dollar->setPosition(ccp(column_dollar->getContentSize().width*2.2f/4,column_dollar->getContentSize().height/2));
 	column_dollar->addChild(ttf_dollar);
@@ -257,7 +259,7 @@ CCLayer* GameMenuController::initLeftTopPanel(){
 	column_amber->setAnchorPoint(ccp(1,0));
 	column_amber->setPosition(ccp(leftTopLayer->getContentSize().width,0));
 	
-	ttf_resin=CCLabelBMFont::create("0", "fonts/bitmapFontTest3.fnt");//CCLabelTTF::create(CCString::createWithFormat("100")->getCString(),"AppleGothic", 30.0);
+	ttf_resin=CCLabelBMFont::create("0", FNTFILE);//CCLabelTTF::create(CCString::createWithFormat("100")->getCString(),"AppleGothic", 30.0);
 	ttf_resin->setAnchorPoint(ccp(0.5,0.5));
 	char str[10] = {0};
     sprintf(str, "%d", cur_resin);
@@ -269,7 +271,7 @@ CCLayer* GameMenuController::initLeftTopPanel(){
 	column_clock->setAnchorPoint(ccp(1,0));
 	column_clock->setPosition(ccp(column_amber->getPositionX()-column_amber->getContentSize().width,0));
 	
-	ttf_clock=CCLabelBMFont::create(str_time, "fonts/bitmapFontTest3.fnt");//CCLabelTTF::create(CCString::createWithFormat("10:00")->getCString(),"AppleGothic", 30.0);
+	ttf_clock=CCLabelBMFont::create(str_time, FNTFILE);//CCLabelTTF::create(CCString::createWithFormat("10:00")->getCString(),"AppleGothic", 30.0);
 	ttf_clock->setAnchorPoint(ccp(0,0.5));
 	ttf_clock->setPosition(ccp(column_clock->getContentSize().width*2.2f/4-ttf_clock->getContentSize().width/2,column_clock->getContentSize().height/2));
 	column_clock->addChild(ttf_clock);
@@ -278,13 +280,13 @@ CCLayer* GameMenuController::initLeftTopPanel(){
 	menuShop->setAnchorPoint(ccp(0,0.5));
 	menuShop->setPosition(ccp(column_dollar->getPositionX()+column_dollar->getContentSize().width+100,
 		column_dollar->getPositionY()+column_dollar->getContentSize().height/2));
-	leftTopLayer->addChild(menuShop);
+	//leftTopLayer->addChild(menuShop);
 
 	return leftTopLayer;
 }
 
 void GameMenuController::initResinVol(){
-	long now=secondNow();
+	long now=MyMath::secondNow();
 	//上次退出时系统时间，若没有，则返回当前系统时间
 	long last_time=CCUserDefault::sharedUserDefault()->getIntegerForKey(LAST_TIME,now);
 	//获取上次存档时的树脂量，若没有则初始化为基础量
@@ -395,7 +397,7 @@ CCSprite* GameMenuController::initRightTable(){
 	scrollView->setPosition(ccp(panel_levelSelect->getContentSize().width+cellSize.width,0));//设置此scrollView的位置
 	menuMapBg->addChild(scrollView);
 
-	CCSprite* toleft=CCSprite::create("toleft.png");
+	CCSprite* toleft=CCSprite::createWithSpriteFrameName("toleft.png");
 	btn_toleft=CCMenuItemSprite::create(toleft,toleft,toleft,this,menu_selector(GameMenuController::menuToLeftCallback));
 	btn_toleft->setAnchorPoint(ccp(0,0.5));
 	btn_toleft->setPosition(ccp(panel_levelSelect->getContentSize().width+cellSize.width,
@@ -403,7 +405,7 @@ CCSprite* GameMenuController::initRightTable(){
 	btn_toleft->setEnabled(false);
 	btn_toleft->setVisible(false);
 
-	CCSprite* toright=CCSprite::create("toright.png");
+	CCSprite* toright=CCSprite::createWithSpriteFrameName("toright.png");
 	btn_toright=CCMenuItemSprite::create(toright,toright,toright,this,menu_selector(GameMenuController::menuToRightCallback));
 	btn_toright->setAnchorPoint(ccp(1,0.5));
 	btn_toright->setPosition(ccp(menuMapBg->getContentSize().width,
@@ -414,8 +416,9 @@ CCSprite* GameMenuController::initRightTable(){
 	menu_leftRight->setPosition(CCPointZero);
 	menuMapBg->addChild(menu_leftRight);
 
-	CCSprite* play=CCSprite::create("btn_play.png");
-	CCMenuItem* btn_play=CCMenuItemSprite::create(play,play,play,this,menu_selector(GameMenuController::menuStartCallback));
+//	CCSprite* play=CCSprite::create("btn_play.png");
+//	CCMenuItem* btn_play=CCMenuItemSprite::create(play,play,play,this,menu_selector(GameMenuController::menuStartCallback));
+	CCMenuItem* btn_play=GlobalComponent::createMenuItem(MENU_PLAY,this,menu_selector(GameMenuController::menuStartCallback));
 	btn_play->setAnchorPoint(ccp(0.5,0));
 	btn_play->setPosition(ccp(panel_levelSelect->getContentSize().width+cellSize.width+containerSize.width/2,0));
 
@@ -425,54 +428,6 @@ CCSprite* GameMenuController::initRightTable(){
 	menuMapBg->addChild(menu2);
 
 	return menuMapBg;
-}
-
-void GameMenuController::initMapScrollView(){
-
-	CCLayer* containerLayer=CCLayer::create();
-	//containerLayer->setTag(111);
-	containerLayer->setContentSize(CCSizeMake(scrollViewWidth_2*2,winSize.height));
-
-	CCSize containerSize=containerLayer->getContentSize();
-	CCSprite* sprite=CCSprite::create("bg_01.png");
-	sprite->setScale(CCDirector::sharedDirector()->getContentScaleFactor());
-	sprite->setTag(1);
-	space=(containerSize.width-sprite->getContentSize().width)/2.0f;
-	sprite->setPosition(ccp(space+sprite->getContentSize().width/2,containerSize.height/2));
-	containerLayer->addChild(sprite);
-
-	CCSprite* sprite2=CCSprite::create("bg_02.png");
-	sprite2->setScale(CCDirector::sharedDirector()->getContentScaleFactor());
-	sprite2->setTag(2);
-	sprite2->setPosition(ccp(sprite->getPositionX()*2,containerSize.height/2));
-	containerLayer->addChild(sprite2);
-	
-	CCSprite* sprite3=CCSprite::create("bg_03.png");
-	sprite3->setScale(CCDirector::sharedDirector()->getContentScaleFactor());
-	sprite3->setTag(3);
-	sprite3->setPosition(ccp(sprite->getPositionX()*3,containerSize.height/2));
-	containerLayer->addChild(sprite3);
-
-	scrollView=CCScrollView::create(containerSize,containerLayer);
-	scrollView->setDirection(kCCScrollViewDirectionHorizontal);
-	scrollView->setTouchEnabled(false);
-	scrollView->setPosition(ccp(tableWidth,0));//设置此scrollView的位置
-	addChild(scrollView);
-
-	CCLabelTTF* pLabel = CCLabelTTF::create("CHOOSE MAP", "Thonburi", 34);
-    pLabel->setPosition(ccp(tableWidth+(winSize.width-tableWidth)/2,winSize.height*3.f/4));
-    this->addChild(pLabel, 1);
-	
-	//开始按钮
-	CCSprite* start=CCSprite::createWithSpriteFrameName("btn_start.png");
-	CCMenuItemSprite* btnStart=CCMenuItemSprite::create(start,start,start,this,menu_selector(GameMenuController::menuStartCallback));
-	btnStart->setAnchorPoint(ccp(0.5,0.5));
-	btnStart->setPosition(ccp((winSize.width-tableWidth)/2,winSize.height/4));
-
-	CCMenu* pMenu=CCMenu::create(btnStart,NULL);
-	pMenu->setAnchorPoint(CCPointZero);
-	pMenu->setPosition(ccp(tableWidth,0));
-	this->addChild(pMenu,1);
 }
 
 CCScene* GameMenuController::scene(){
@@ -558,6 +513,7 @@ void GameMenuController::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent){
 				CCPoint touchPoint=((CCLayer*)scrollView->getContainer())->convertToNodeSpace(endPoint);
 				if(sprite->boundingBox().containsPoint(touchPoint)){//点击到当前页面
 					CCLog("clicked:%d",curPage);
+					this->menuStartCallback(this);
 				}else{//没点击到当前页
 					CCLog("shake curPage:%d",curPage);
 					CCActionInterval* shake=CCWaves::create(1,10,true,true,ccg(24,24),0.5);
@@ -684,7 +640,8 @@ void GameMenuController::menuShopCallback(CCObject* pSender){//点击商店按钮回调
 }
 void GameMenuController::menuStartCallback(CCObject* pSender){//点击开始按钮回调
 	CCLog("click start button");
-	int consumeResin=10;//此局消耗树脂
+	unsigned int consumeResin=10;//此局消耗树脂
+	this->cur_resin-=consumeResin;
 	if(this->cur_resin<consumeResin) return;
 	this->save();
 	CCUserDefault::sharedUserDefault()->setIntegerForKey(CONSUME_RESIN,10);
@@ -721,7 +678,7 @@ void GameMenuController::menuChooseResinCallback(CCObject* pSender){
 		panel->setDisplayFrame(CCSpriteFrameCache::sharedSpriteFrameCache()->spriteFrameByName("panel_red.png"));
 		break;
 	case panel_yellow:
-		panel->setDisplayFrame(CCSpriteFrameCache::sharedSpriteFrameCache()->spriteFrameByName("panel_yellow.png"));
+		panel->setDisplayFrame(CCSprite::createWithSpriteFrameName("panel_yellow.png")->displayFrame());//CCSpriteFrameCache::sharedSpriteFrameCache()->spriteFrameByName("panel_yellow.png"));
 		break;
 	case panel_green:
 		panel->setDisplayFrame(CCSpriteFrameCache::sharedSpriteFrameCache()->spriteFrameByName("panel_green.png"));
@@ -734,6 +691,7 @@ void GameMenuController::menuChooseResinCallback(CCObject* pSender){
 
 void GameMenuController::onEnter(){
 	CCLog("MENU:onEnter");
+	this->setKeypadEnabled(true);
 	CCDirector::sharedDirector()->getTouchDispatcher()->addTargetedDelegate(this,1,true);
 	CCLayer::onEnter();
 }
@@ -748,14 +706,15 @@ void GameMenuController::onExitTransitionDidStart(){
 void GameMenuController::onExit(){
 	CCLog("MENU:onExit");
 	this->save();
-	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("menu.plist");
-	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("menuMap.plist");
 	CCDirector::sharedDirector()->getTouchDispatcher()->removeDelegate(this);
+	//CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("menu.plist");
+	//CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("menuMap.plist");
+//	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("collections.plist");
 	CCLayer::onExit();
 }
 void GameMenuController::save(){
 	//退出时把当前系统时间存档,减去当前倒计时已经消耗的时间
-	CCUserDefault::sharedUserDefault()->setIntegerForKey(LAST_TIME,secondNow()-(INTERVAL-countDown));
+	CCUserDefault::sharedUserDefault()->setIntegerForKey(LAST_TIME,MyMath::secondNow()-(INTERVAL-countDown));
 	CCUserDefault::sharedUserDefault()->setIntegerForKey(RESIN_VOLUME,cur_resin);//当前树脂量存档
 	CCUserDefault::sharedUserDefault()->flush();
 }

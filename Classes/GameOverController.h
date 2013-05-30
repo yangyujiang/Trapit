@@ -25,6 +25,8 @@ public:
 	void onExitTransitionDidStart();
 	void onExit();// 节点调用dealloc方法之前将会调用此方法   
     //如果使用了CCTransitionScene,将会在过渡效果结束以后调用此方法  
+	
+	virtual void  keyBackClicked();
 
 	virtual void update(float dt);
 	

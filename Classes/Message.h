@@ -22,9 +22,18 @@ public:
 	~MessageVector();
 	static vector<Message> sharedMessages();
 	static void addMessage(void* sender,unsigned int type,void* receiver);
-	void deleteMessage(Message message);
 	static void handleMessage();
 };
+
+
+class MessageView{
+public:
+	~MessageView();
+	static vector<Message> sharedMessages();
+	static void addMessage(void* sender,unsigned int type,void* receiver);
+	static void handleMessage();
+};
+
 
 
 

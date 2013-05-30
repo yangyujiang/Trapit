@@ -47,9 +47,13 @@ protected:
 	//float coverInsectTimeCount;//覆盖住虫子的时间累加
 	//float isCoverInsect;//是否碾住虫子？
 	BaseInsect* coveredInsect;//被覆盖的虫子
+//与虫子的交互
+public:
+	void attackedByEnemy(int attack);
 
 public:
-	float blood;
+	CC_SYNTHESIZE(int ,reached,Reached);//当树脂球小于此量时，缩放
+	CC_SYNTHESIZE(float,blood,Blood);
 	int countBlood;//累加消耗的树脂
 	bool usedUp();//是否耗光树脂
 	void shrinkResinByBlood();//根据当前树脂量缩放树脂
@@ -68,6 +72,7 @@ public:
 	void updatePolygonTexture();
 	
 	void accelerateCallBack(cocos2d::CCAcceleration* pAccelerationValue);//加速器变化时（倾斜手机屏幕）的回调函数
+	void reduceBodyVel(float scale);//刚体速度减少为原来的scale
 
 	void update(float dt);
 	CCPoint getDeltaPosition();//两次位置变化的偏移
@@ -79,9 +84,9 @@ public:
 	void myDraw();//调试用
 	
 public:
-	void beginContact(BaseInsect* insect);
-	void endContact();
-	void handleContactWithInsect(float dt);//处理与虫子的碰撞事件
+	void beginCover(BaseInsect* insect);
+	void endCover();
+	void coveringInsect(float dt);//处理与虫子的碰撞事件
 };
 
 #endif //__GAME_RESIN_BALL_MODEL_H__

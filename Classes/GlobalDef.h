@@ -65,8 +65,26 @@ return NULL; \
 } \
 }; 
 
+#define CREATE_FUNC_FOUR_PARAM(Type,__PARAMTYPE1__,__PARAM1__,__PARAMTYPE2__,__PARAM2__,__PARAMTYPE3__,__PARAM3__,__PARAMTYPE4__,__PARAM4__) \
+static Type* create(__PARAMTYPE1__ __PARAM1__,__PARAMTYPE2__ __PARAM2__,__PARAMTYPE3__ __PARAM3__,__PARAMTYPE4__ __PARAM4__) \
+{ \
+Type *pRet = new Type(); \
+if (pRet && pRet->init(__PARAM1__,__PARAM2__,__PARAM3__,__PARAM4__)) \
+{ \
+pRet->autorelease(); \
+return pRet; \
+} \
+else \
+{ \
+delete pRet; \
+pRet = NULL; \
+return NULL; \
+} \
+}; 
+
+
 #define  LAYER_CREATE_FUNC_DOUBLE_PARAM(layer,__PARAMTYPE1__,__PARAM1__,__PARAMTYPE2__,__PARAM2__) \
-static layer* CREATE(__PARAMTYPE1__ __PARAM1__,__PARAMTYPE2__ __PARAM2__) \
+static layer* create(__PARAMTYPE1__ __PARAM1__,__PARAMTYPE2__ __PARAM2__) \
 { \
 layer *pRet = new layer(); \
 if (pRet && pRet->init(__PARAM1__,__PARAM2__)) \

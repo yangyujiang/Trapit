@@ -19,7 +19,7 @@ public:
                                const int *indices);
     
     //重载父类draw
-    void draw();
+    virtual void draw();
     //初始化顶点信息
     bool initWithUV(const cocos2d::CCPoint *uvs,
                     const int *indices,
@@ -46,6 +46,12 @@ private:
     //顶点数目
     int verCnt_;
     
+};
+
+class MYCCSprite:public CCSprite{
+public:
+	static MYCCSprite* create(const char* pszFileName);
+	virtual void draw();
 };
 
 

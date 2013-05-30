@@ -1,9 +1,12 @@
-ï»¿#include "GameCollectionController.h"
+#include "GameCollectionController.h"
 #include "VisibleRect.h"
 #include "GamePlayController.h"
 #include "GameMenuController.h"
 #include "../extensions/cocos-ext.h"
 #include "ListViewLayer.h"
+#include "MyMath.h"
+#include "GlobalComponent.h"
+#include "LanguageAdapter.h"
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)   
 #include "vld.h"   
@@ -12,39 +15,9 @@
 USING_NS_CC;
 USING_NS_CC_EXT;
 
-
-void  WStrToUTF8(std::string& dest, const std::wstring& src){
-	dest.clear();
-	for (size_t i = 0; i < src.size(); i++){
-		wchar_t w = src[i];
-		if (w <= 0x7f)
-			dest.push_back((char)w);
-		else if (w <= 0x7ff){
-			dest.push_back(0xc0 | ((w >> 6)& 0x1f));
-			dest.push_back(0x80| (w & 0x3f));
-		}
-		else if (w <= 0xffff){
-			dest.push_back(0xe0 | ((w >> 12)& 0x0f));
-			dest.push_back(0x80| ((w >> 6) & 0x3f));
-			dest.push_back(0x80| (w & 0x3f));
-		}
-		else if (sizeof(wchar_t) > 2 && w <= 0x10ffff){
-			dest.push_back(0xf0 | ((w >> 18)& 0x07)); // wchar_t 4-bytes situation
-			dest.push_back(0x80| ((w >> 12) & 0x3f));
-			dest.push_back(0x80| ((w >> 6) & 0x3f));
-			dest.push_back(0x80| (w & 0x3f));
-		}
-		else
-			dest.push_back('?');
-	}
-}
-
-//! simple warpper
-std::string WStrToUTF8(const std::wstring& str){
-	std::string result;
-	WStrToUTF8(result, str);
-	return result;
-}
+const int TAG_SKILL_DESCRIP=123321;//¼¼ÄÜËµÃ÷ÎÄ×Ö
+const int TAG_SKILLNAME=321321;//¼¼ÄÜÃû³Æ
+const int TAG_SKILLBOX=12345;//¼¼ÄÜ¿ò
 
 GameCollectionController::GameCollectionController():preIdx(0),isMoving(false)
 {
@@ -58,67 +31,53 @@ GameCollectionController::~GameCollectionController()
 bool GameCollectionController::init(){
 	bool pRet = false;
 
-    do{
-        // å…ˆè°ƒç”¨è¶…ç±»çš„initæ–¹æ³•
+	do{
+		// ÏÈµ÷ÓÃ³¬ÀàµÄinit·½·¨
 		CC_BREAK_IF(! CCLayer::init());
-	CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("insects.plist","insects.png");
-	CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("menu.plist","menu.png");
-	CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("ambers.plist","ambers.png");
 		winSize=CCDirector::sharedDirector()->getWinSize();
-		
+
 		listWidth=winSize.width*4.0f/5;
 
-		CCSprite* Collection_bg=CCSprite::create("map.png");
+		CCSprite* Collection_bg=CCSprite::create("menu_bg.png");
 		Collection_bg->setAnchorPoint(ccp(0,0));
-		Collection_bg->setPosition(ccp(listWidth,0));
-		addChild(Collection_bg,-1);
+		Collection_bg->setPosition(ccp(0,0));
+		this->addChild(Collection_bg);
 
 		CCSprite* topTitle=this->initTopTitle();
 		topTitle->setAnchorPoint(ccp(0.5,1));
 		topTitle->setPosition(ccp(winSize.width/2,winSize.height));
 		this->addChild(topTitle,1);
-		
-		//ä¸‹ä¾§ç¥ç€åŠ æˆæ 
+
+		//ÏÂ²àçúçê¼Ó³ÉÀ¸
 		amberAddLayer=this->initbottomLayer();
 		amberAddLayer->setAnchorPoint(ccp(0.5,0));
 		amberAddLayer->setPosition(ccp(winSize.width/2,0));
-		this->addChild(amberAddLayer,0);
+		this->addChild(amberAddLayer,2);
 
-		//åž‚ç›´æ»‘åŠ¨åˆ—è¡¨
+		//´¹Ö±»¬¶¯ÁÐ±í
 		ListViewLayer* listViewLayer=ListViewLayer::create();
-		listViewLayer->initList(listWidth,winSize.height-topTitle->getContentSize().height-amberAddLayer->getContentSize().height,20,CCSizeMake(960,120));
+		listViewLayer->initList(listWidth,winSize.height-topTitle->getContentSize().height-amberAddLayer->getContentSize().height,20,CCSizeMake(960,180));
 		listViewLayer->setTag(TAG_LIST);
-	//	listViewLayer->getChildByTag(TAG_COLLECTIONLIST)->setContentSize(CCSizeMake(listWidth,winSize.height-topTitle->getContentSize().height));
+		//	listViewLayer->getChildByTag(TAG_COLLECTIONLIST)->setContentSize(CCSizeMake(listWidth,winSize.height-topTitle->getContentSize().height));
 		listViewLayer->setPosition(ccp(0,amberAddLayer->getContentSize().height));
 		addChild(listViewLayer);
 
-		//æŠ€èƒ½å›¾æ ‡
-		CCSprite* sprite=this->getCurSprite(preIdx);
-		sprite->setTag(TAG_CUR_AMBER);
-		sprite->setAnchorPoint(ccp(0.5,1));
-		sprite->setPosition(ccp((winSize.width-listWidth)/2+listWidth,winSize.height*0.8f));
-		addChild(sprite);
-		CCSprite* sprite_movable=this->getCurSprite(preIdx);
-		sprite_movable->setTag(TAG_CUR_AMBER_MOVABLE);
-		sprite_movable->setAnchorPoint(ccp(0.5,1));
-		sprite_movable->setPosition(ccp((winSize.width-listWidth)/2+listWidth,winSize.height*0.8f));
-		addChild(sprite_movable,2);
-		sprite_movable->setVisible(false);
+		this->initSkillColumn();//³õÊ¼»¯¼¼ÄÜÕ¹Ê¾À¸
 
-		//æŠ€èƒ½è¯´æ˜Žæ–‡å­—
-		   std::string pString = WStrToUTF8(L"æŠ€èƒ½ä»‹ç»ï¼š\n  ä½¿ç”¨åŽï¼Œæ‰€æœ‰æ˜†è™«\nä¼šè¿›å…¥æ”»å‡»çŠ¶æ€ã€‚\nå½“å¿ƒä½ çš„æ‰‹æŒ‡ï¼");
-		//CCString *pString = CCString::createWithFormat("æ®è¯´åœ¨map2ä¸­ç»å¸¸è§åˆ°");
-		CCLabelTTF *pLabel = CCLabelTTF::create(pString.c_str(), "AppleGothic", 20.0);
-        pLabel->setAnchorPoint(ccp(0.5,1));
-		pLabel->setPosition(ccp((winSize.width-listWidth)/2+listWidth,winSize.height*0.5f));
-        pLabel->setTag(123);
-        this->addChild(pLabel);
+		/*	std::vector<Amber*> ambers=Amber::getAmbersFromSQLite();
+		const char* skillName=ambers[0]->getDescrip();
+		CCLog("%s",skillName);
+		CCString *pString = CCString::createWithFormat("%s",skillName);
+		CCLabelTTF *pLabel = CCLabelTTF::create(pString->getCString(), "AppleGothic", 60.0);
+		pLabel->setAnchorPoint(ccp(0.5,1));
+		pLabel->setPosition(ccp((winSize.width)/2,winSize.height*0.5f));
+		pLabel->setTag(123);
+		this->addChild(pLabel,10);*/
 
-		//Amber::getAmbersFromSQLite();
-		
-		//è¿”å›žæŒ‰é’®
-		CCSprite* goback=CCSprite::createWithSpriteFrameName("btn_goback.png");
-		CCMenuItemSprite* btnGoBack=CCMenuItemSprite::create(goback,goback,goback,this,menu_selector(GameCollectionController::menuGoBackCallback));
+		//·µ»Ø°´Å¥
+		CCMenuItem* btnGoBack=GlobalComponent::createMenuItem(MENU_GOBACK,this,menu_selector(GameCollectionController::menuGoBackCallback));
+		//CCSprite* goback=CCSprite::createWithSpriteFrameName("btn_goback.png");
+		//CCMenuItemSprite* btnGoBack=CCMenuItemSprite::create(goback,goback,goback,this,menu_selector(GameCollectionController::menuGoBackCallback));
 		btnGoBack->setAnchorPoint(CCPointZero);
 		btnGoBack->setPosition(CCPointZero);
 		CCMenu* menu=CCMenu::create(btnGoBack,NULL);
@@ -126,17 +85,70 @@ bool GameCollectionController::init(){
 		this->addChild(menu);
 
 		this->scheduleUpdate();
-        pRet = true;
-    }while(0);
-    return pRet;
+		pRet = true;
+	}while(0);
+	return pRet;
+}
+void GameCollectionController::initSkillColumn(){//¼¼ÄÜÀ¸ 
+	//¼¼ÄÜ¡¢³É¾Í·Ö¸ôÀ¸
+	CCSprite* skill_split=CCSprite::createWithSpriteFrameName("skill_split.png");
+	skill_split->setAnchorPoint(ccp(0.7f,0.5f));
+	skill_split->setPosition(ccp(listWidth,winSize.height/2));
+	this->addChild(skill_split);
+
+	//¼¼ÄÜÀ¸£¨ÊúÀ¸£©xÖáÆðÊ¼Î»ÖÃ
+	const int skillColumn_start=skill_split->getPositionX()+skill_split->getContentSize().width*(1-skill_split->getAnchorPoint().x);
+	CCLog("skillColumn_start:%d",skillColumn_start);
+	CCLog("listWidth:%d",listWidth);
+	//¼¼ÄÜ¿ò
+	CCSprite* skill_box=CCSprite::createWithSpriteFrameName("slot.png");
+	skill_box->setScale(1.5f);//·Å´ó1.5±¶
+	skill_box->setAnchorPoint(ccp(0.5,0.5));
+	skill_box->setPosition(ccp((winSize.width-skillColumn_start)/2+skillColumn_start,winSize.height*0.75f));
+	this->addChild(skill_box,0,TAG_SKILLBOX);
+
+	//¼¼ÄÜÍ¼±ê
+	CCSprite* sprite=this->getCurSprite(preIdx);
+	sprite->setTag(TAG_CUR_AMBER);
+	sprite->setAnchorPoint(ccp(0.5,0.5));
+	sprite->setPosition(skill_box->getPosition());
+	addChild(sprite);
+/*	CCSprite* sprite_movable=this->getCurSprite(preIdx);
+	sprite_movable->setTag(TAG_CUR_AMBER_MOVABLE);
+	sprite_movable->setAnchorPoint(sprite->getAnchorPoint());
+	sprite_movable->setPosition(sprite->getPosition());
+	addChild(sprite_movable,2);
+	sprite_movable->setVisible(false);*/
+	movableSkill=this->getCurSprite(preIdx);
+	movableSkill->setAnchorPoint(sprite->getAnchorPoint());
+	movableSkill->setPosition(sprite->getPosition());
+	addChild(movableSkill,2);
+	movableSkill->setVisible(false);
+
+	CCLabelTTF *label_skillName=CCLabelTTF::create(__skillName[0],"Arial",30.f);
+	label_skillName->setAnchorPoint(ccp(0.5f,0.5f));
+	label_skillName->setPosition(ccp(skill_box->getContentSize().width/2,-label_skillName->getContentSize().height/2));
+	skill_box->addChild(label_skillName,2,TAG_SKILLNAME);
+
+	//¼¼ÄÜËµÃ÷ÎÄ×Ö
+	std::string pString =__skillDescrip[0];//skillDescrip[0];//"¼¼ÄÜ½éÉÜ£º\n  Ê¹ÓÃºó£¬ËùÓÐÀ¥³æ\n»á½øÈë¹¥»÷×´Ì¬¡£\nµ±ÐÄÄãµÄÊÖÖ¸";
+	//"¼¼ÄÜ½éÉÜ£º\n  Ê¹ÓÃºó£¬ËùÓÐÀ¥³æ\n»á½øÈë¹¥»÷×´Ì¬¡£\nµ±ÐÄÄãµÄÊÖÖ¸£¡";
+	//   std::string pString = MyMath::WStrToUTF8(L"¼¼ÄÜ½éÉÜ£º\n  Ê¹ÓÃºó£¬ËùÓÐÀ¥³æ\n»á½øÈë¹¥»÷×´Ì¬¡£\nµ±ÐÄÄãµÄÊÖÖ¸£¡");
+	//CCString *pString = CCString::createWithFormat("¾ÝËµÔÚmap2ÖÐ¾­³£¼ûµ½");
+	CCLabelTTF *pLabel = CCLabelTTF::create(pString.c_str(), "Arial", 20.0);
+	pLabel->setAnchorPoint(ccp(0.5,1));
+	pLabel->setPosition(ccp((winSize.width-listWidth)/2+listWidth,winSize.height*0.5f));
+	pLabel->setTag(TAG_SKILL_DESCRIP);
+	this->addChild(pLabel);
 }
 CCSprite* GameCollectionController::initTopTitle(){
-	CCSprite* title=CCSprite::create("listitem_title.png");
+	/*	CCSprite* title=CCSprite::create("listitem_title.png");
 
 	CCLabelTTF* ttf_title=CCLabelTTF::create("Collections","Thonburi",40.0);
 	ttf_title->setAnchorPoint(ccp(0.5,0.5));
 	ttf_title->setPosition(ccp(title->getContentSize().width/2,title->getContentSize().height/2));
-	title->addChild(ttf_title);
+	title->addChild(ttf_title);*/
+	CCSprite* title=CCSprite::createWithSpriteFrameName("collection_top.png");
 
 	return title;
 }
@@ -145,12 +157,13 @@ CCSprite* GameCollectionController::initAmplificationIcon(const char* name,float
 	CCSprite* bg=CCSprite::create();
 	bg->setContentSize(CCSizeMake(200,50));
 
-	CCLabelTTF* ttf_name=CCLabelTTF::create(name,"AppleGothic",40);
+	CCLabelTTF* ttf_name=CCLabelTTF::create(name,"AppleGothic",20);
 	ttf_name->setAnchorPoint(ccp(0,0.5));
 	ttf_name->setPosition(ccp(0,bg->getContentSize().height/2));
 	bg->addChild(ttf_name);
-	CCSprite* star=CCSprite::createWithSpriteFrameName("stars_three.png");
-	CCSprite* stars=CCSprite::create("stars_three.png",CCRect(0,0,star->getContentSize().width*amplification/3,star->getContentSize().height));//:createWithSpriteFrameName("stars_.png");
+	CCSprite* star=CCSprite::createWithSpriteFrameName("stars_three_small.png");
+	
+	CCSprite* stars=CCSprite::create("stars_three_small.png",CCRect(0,0,star->getContentSize().width*amplification/3,star->getContentSize().height));//:createWithSpriteFrameName("stars_.png");
 	stars->setAnchorPoint(ccp(0,0.5));
 	stars->setPosition(ccp(ttf_name->getPositionX()+ttf_name->getContentSize().width,bg->getContentSize().height/2));
 	bg->addChild(stars);
@@ -163,154 +176,156 @@ CCSprite* GameCollectionController::initAmplificationIcon(const char* name,float
 CCSprite* GameCollectionController::getCurSprite(unsigned int idx){
 	CCSprite* sprite;
 	switch(idx){
-		case 0:sprite= CCSprite::createWithSpriteFrameName("amber_1.png");break;
-		case 1:sprite= CCSprite::createWithSpriteFrameName("amber_2.png");break;
-		case 2:sprite= CCSprite::createWithSpriteFrameName("amber_3.png");break;
-		case 3:sprite= CCSprite::createWithSpriteFrameName("amber_1.png");break;
-		case 4:sprite= CCSprite::createWithSpriteFrameName("amber_2.png");break;
-		case 5:sprite= CCSprite::createWithSpriteFrameName("amber_3.png");break;
-		case 6:sprite= CCSprite::createWithSpriteFrameName("amber_1.png");break;
-		case 7:sprite= CCSprite::createWithSpriteFrameName("amber_2.png");break;
-		case 8:sprite= CCSprite::createWithSpriteFrameName("amber_3.png");break;
-		case 9:sprite= CCSprite::createWithSpriteFrameName("amber_1.png");break;
-		case 10:sprite= CCSprite::createWithSpriteFrameName("amber_2.png");break;
-		case 11:sprite= CCSprite::createWithSpriteFrameName("amber_2.png");break;
-		case 12:sprite= CCSprite::createWithSpriteFrameName("amber_3.png");break;
-		case 13:sprite= CCSprite::createWithSpriteFrameName("amber_1.png");break;
-		case 14:sprite= CCSprite::createWithSpriteFrameName("amber_2.png");break;
-		case 15:sprite= CCSprite::createWithSpriteFrameName("amber_3.png");break;
-		case 16:sprite= CCSprite::createWithSpriteFrameName("amber_1.png");break;
-		case 17:sprite= CCSprite::createWithSpriteFrameName("amber_2.png");break;
-		case 18:sprite= CCSprite::createWithSpriteFrameName("amber_3.png");break;
-		default:sprite= CCSprite::create("amber_1.png");break;
+	case 0:sprite= CCSprite::createWithSpriteFrameName("skill_1.png");break;
+	case 1:sprite= CCSprite::createWithSpriteFrameName("skill_2.png");break;
+	case 2:sprite= CCSprite::createWithSpriteFrameName("skill_3.png");break;
+	default:sprite= CCSprite::createWithSpriteFrameName("skill_1.png");break;
 	}
+	sprite->setScale(1.5f);
 	return sprite;
 }
 
-CCSprite* GameCollectionController::initbottomLayer(){//åˆå§‹åŒ–ä¸‹ä¾§çš„layer,å³ç¥ç€åŠ æˆæ§½
-	
-	//åº•è‰²
-	CCSprite* bg=CCSprite::create("listitem2.png");
+CCSprite* GameCollectionController::initbottomLayer(){//³õÊ¼»¯ÏÂ²àµÄlayer,¼´çúçê¼Ó³É²Û
 
-	//ç¥ç€åŠ æˆå››ä¸ªå­—
-	 std::string pString = WStrToUTF8(L"ç¥ç€\nåŠ æˆ");
+	//µ×É«
+	CCSprite* bg=CCSprite::createWithSpriteFrameName("collection_bottom.png");
+
+	//çúçê¼Ó³ÉËÄ¸ö×Ö
+	/*	 std::string pString = WStrToUTF8(L"çúçê\n¼Ó³É");
 	CCLabelTTF *pLabel = CCLabelTTF::create(pString.c_str(), "AppleGothic", 50.0);
-    pLabel->setAnchorPoint(ccp(0,0.5));
+	pLabel->setAnchorPoint(ccp(0,0.5));
 	pLabel->setPosition(ccp(20,bg->getContentSize().height*0.5f));
-    bg->addChild(pLabel);
+	bg->addChild(pLabel);*/
 
 	skillSlot=SkillSlotAdapter::create();
 	skillSlot->setAnchorPoint(ccp(0,0.5));
-	skillSlot->setPosition(ccp(pLabel->getPositionX()+pLabel->getContentSize().width+20,bg->getContentSize().height/2));
+	skillSlot->setPosition(ccp(20,bg->getContentSize().height*0.5f));
 	bg->addChild(skillSlot);
 
-	std::string name=WStrToUTF8(L"é€Ÿåº¦ï¼š");
+	std::string name=variable_vel;//"ËÙ¶È£º";
+	//std::string name=MyMath::WStrToUTF8(L"ËÙ¶È£º");
 	CCSprite* veliIcon=this->initAmplificationIcon(name.c_str(),1.5);
 	veliIcon->setAnchorPoint(ccp(0,0.5));
-	veliIcon->setPosition(ccp(skillSlot->getPositionX()+skillSlot->getContentSize().width,bg->getContentSize().height*0.75));
+	veliIcon->setPosition(ccp(skillSlot->getPositionX()+skillSlot->getContentSize().width+50,bg->getContentSize().height*0.75f));
 	bg->addChild(veliIcon);
 
-	name=WStrToUTF8(L"æŽ§åˆ¶ï¼š");
+	name=variable_contro;//"¿ØÖÆ";
+	//	name=MyMath::WStrToUTF8(L"¿ØÖÆ£º");
 	CCSprite* conIcon=this->initAmplificationIcon(name.c_str(),2.5);
 	conIcon->setAnchorPoint(ccp(0,0.5));
-	conIcon->setPosition(ccp(skillSlot->getPositionX()+skillSlot->getContentSize().width,bg->getContentSize().height*0.25));
+	conIcon->setPosition(ccp(skillSlot->getPositionX()+skillSlot->getContentSize().width+50,bg->getContentSize().height*0.5f));
 	bg->addChild(conIcon);
 
-	name=WStrToUTF8(L"é»æ€§ï¼š");
+	name=variable_nian;//"ð¤ÐÔ";
+	//name=MyMath::WStrToUTF8(L"ð¤ÐÔ£º");
 	CCSprite* nianIcon=this->initAmplificationIcon(name.c_str(),3);
 	nianIcon->setAnchorPoint(ccp(0,0.5));
-	nianIcon->setPosition(ccp(conIcon->getPositionX()+conIcon->getContentSize().width,bg->getContentSize().height*0.25));
+	nianIcon->setPosition(ccp(skillSlot->getPositionX()+skillSlot->getContentSize().width+50,bg->getContentSize().height*0.25f));
 	bg->addChild(nianIcon);
 
-	/*pString = WStrToUTF8(L"é€Ÿåº¦+");
+	/*pString = WStrToUTF8(L"ËÙ¶È+");
 	CCLabelTTF *pLabelV = CCLabelTTF::create(pString.c_str(), "AppleGothic", 40.0);
-    pLabelV->setAnchorPoint(ccp(0,0.5));
+	pLabelV->setAnchorPoint(ccp(0,0.5));
 	pLabelV->setPosition(ccp(((CCSprite*)_slots->lastObject())->getPositionX()+
-		((CCSprite*)_slots->lastObject())->getContentSize().width+20,bg->getContentSize().height*0.75f));
-    bg->addChild(pLabelV);*/
+	((CCSprite*)_slots->lastObject())->getContentSize().width+20,bg->getContentSize().height*0.75f));
+	bg->addChild(pLabelV);*/
 
 	return bg;
 	//this->addChild(amberAddLayer,1);
 }
 
 CCScene* GameCollectionController::scene(){
-    CCScene *scene = NULL;
-    do{
+	CCScene *scene = NULL;
+	do{
 		scene = CCScene::create();
-        CC_BREAK_IF(!scene);
+		CC_BREAK_IF(!scene);
 
-        GameCollectionController *layer = GameCollectionController::create();
-        CC_BREAK_IF(!layer);
+		GameCollectionController *layer = GameCollectionController::create();
+		CC_BREAK_IF(!layer);
 
-        scene->addChild(layer);
+		scene->addChild(layer);
 
-    }while(0);
+	}while(0);
 
-    return scene;
+	return scene;
 }
 
 void GameCollectionController::update(float dt){
-	unsigned int idx=((ListViewLayer*)this->getChildByTag(TAG_LIST))->getIdx();
+	ListViewLayer* list=((ListViewLayer*)this->getChildByTag(TAG_LIST));
+	CCTableViewAdvanced* listview=((CCTableViewAdvanced*)list->getChildByTag(TAG_COLLECTIONLIST));
+	CCPoint offSet=listview->getContentOffset();
+	float dis=offSet.y-list->getScrollPoint().y;
+	if(dis!=0){//ÔÚ¹ö¶¯ÖÐ¼ÆËãÑ¡ÖÐµÄitem
+		int id=list->numberOfCellsInTableView(NULL)+offSet.y/list->cellSizeForTable(NULL).height-2;
+		list->setScrollPoint(offSet);
+		list->setIdx(id);//ÉèÖÃÑ¡ÖÐµÄitemID²¢±ê¼ÇÑ¡ÖÐ
+	}
+
+	unsigned int idx=list->getIdx();
 	if(idx!=preIdx){
 		preIdx=idx;
 		CCSprite* sprite=(CCSprite*)this->getChildByTag(TAG_CUR_AMBER);
 		sprite->setDisplayFrame(this->getCurSprite(idx)->displayFrame());
-		
-		sprite=(CCSprite*)this->getChildByTag(TAG_CUR_AMBER_MOVABLE);
-		sprite->setDisplayFrame(this->getCurSprite(idx)->displayFrame());
+
+		//sprite=(CCSprite*)this->getChildByTag(TAG_CUR_AMBER_MOVABLE);
+		movableSkill->setDisplayFrame(this->getCurSprite(idx)->displayFrame());
+
+		//¼¼ÄÜËµÃ÷ÎÄ×Ö¸Ä±ä
+		CCLabelTTF *label_skillDescrip=(CCLabelTTF*)this->getChildByTag(TAG_SKILL_DESCRIP);
+		label_skillDescrip->setString(__skillDescrip[idx]);
+
+		CCLabelTTF *label_skillName=(CCLabelTTF*)this->getChildByTag(TAG_SKILLBOX)->getChildByTag(TAG_SKILLNAME);
+		label_skillName->setString(__skillName[idx]);
 	}
-	
+
 }
 bool GameCollectionController::ccTouchBegan(CCTouch *pTouch, CCEvent *pEvent){
 	CCPoint startPoint=CCDirector::sharedDirector()->convertToGL(pTouch->getLocationInView());
 
 	if(startPoint.x<listWidth) return false;
 
-	CCSprite* amber=(CCSprite*)this->getChildByTag(TAG_CUR_AMBER_MOVABLE);
-	if(amber->boundingBox().containsPoint(startPoint)){
+	//CCSprite* amber=(CCSprite*)this->getChildByTag(TAG_CUR_AMBER_MOVABLE);
+	if(movableSkill->boundingBox().containsPoint(startPoint)){
 		isMoving=true;
-		amber->setVisible(true);
+		movableSkill->setVisible(true);
 	}
-	
+
 	return true;
 }
 void GameCollectionController::ccTouchMoved(CCTouch *pTouch, CCEvent *pEvent){
 	if(!isMoving) return;
 	CCPoint loc=CCDirector::sharedDirector()->convertToGL(pTouch->getLocationInView());
-	
-	CCSprite* amber=(CCSprite*)this->getChildByTag(TAG_CUR_AMBER_MOVABLE);
-	if(loc.x<winSize.width&&loc.x>amber->getContentSize().width/2){
-		/*if(CCAction* moveTo=amber->getActionByTag(TAG_MOVETO)){//è®¾ç½®å¹³æ»‘ç§»åŠ¨
-			if(!moveTo->isDone()) return;
-			else CCLog("runACtion");
-		}
-		float distance=ccpDistance(amber->getPosition(),loc);
-		if(distance>50){
-			CCAction* moveTo=CCMoveTo::create(distance/1000,loc);
-			moveTo->setTag(TAG_MOVETO);
-			amber->runAction(moveTo);
-		}else*/
-		amber->setPosition(ccp(loc.x,loc.y+amber->getContentSize().height/2));
-		
-	}else if(loc.y<winSize.height-amber->getContentSize().height){
-		if(loc.x>winSize.width) amber->setPositionX(winSize.width-amber->getContentSize().width/2);
-		else if(loc.x<amber->getContentSize().width/2) amber->setPositionX(amber->getContentSize().width/2);
-		amber->setPositionY(loc.y+amber->getContentSize().height/2);
+
+//	CCSprite* amber=(CCSprite*)this->getChildByTag(TAG_CUR_AMBER_MOVABLE);
+	if(loc.x<winSize.width&&loc.x>movableSkill->getContentSize().width/2){
+		movableSkill->setPosition(loc);
+
+	}else if(loc.y<winSize.height-movableSkill->getContentSize().height){
+		if(loc.x>winSize.width) movableSkill->setPositionX(winSize.width-movableSkill->getContentSize().width/2);
+		else if(loc.x<movableSkill->getContentSize().width/2) movableSkill->setPositionX(movableSkill->getContentSize().width/2);
+		movableSkill->setPositionY(loc.y);
 	}
-	
+
 }
 void GameCollectionController::ccTouchEnded(CCTouch *pTouch, CCEvent *pEvent){
 	CCPoint endPoint=CCDirector::sharedDirector()->convertToGL(pTouch->getLocationInView());
 	isMoving=false;
-	
-	CCSprite *amber=(CCSprite*)this->getChildByTag(TAG_CUR_AMBER_MOVABLE);
-	amber->setVisible(false);
 
-	//è‹¥æ˜¯æ‹–åˆ°äº†æŠ€èƒ½æ ï¼Œåˆ™åŠ å…¥åˆ°æŠ€èƒ½æ ä¸­
-	skillSlot->addSkillIfOverLap(amber);
+//	CCSprite *amber=(CCSprite*)this->getChildByTag(TAG_CUR_AMBER_MOVABLE);
+	movableSkill->setVisible(false);
+	movableSkill->setTag(((ListViewLayer*)this->getChildByTag(TAG_LIST))->getIdx());
 
-	CCSprite *amber_=(CCSprite*)this->getChildByTag(TAG_CUR_AMBER);
-	amber->setPosition(amber_->getPosition());
+	//ÈôÊÇÍÏµ½ÁË¼¼ÄÜÀ¸£¬Ôò¼ÓÈëµ½¼¼ÄÜÀ¸ÖÐ
+	int amberId=skillSlot->addSkillIfOverLap(movableSkill);
+	if(amberId>0){
+		char name[20]={0};
+		sprintf(name,"used_id_%d",amberId);
+		ListViewLayer* list=(ListViewLayer*)this->getChildByTag(TAG_LIST);
+		CCUserDefault::sharedUserDefault()->setIntegerForKey(name,list->getIdx());
+		CCUserDefault::sharedUserDefault()->flush();
+	}
+	//Î»ÖÃ¸´Ô­
+	movableSkill->setPosition(this->getChildByTag(TAG_CUR_AMBER)->getPosition());
 
 }
 void GameCollectionController::ccTouchCancelled(CCTouch *pTouch, CCEvent *pEvent){
@@ -322,22 +337,33 @@ void GameCollectionController::menuGoBackCallback(CCObject* pSender){
 	CCDirector::sharedDirector()->replaceScene(CCTransitionCrossFade::create(1,GameMenuController::scene()));
 }
 
+void GameCollectionController::keyBackClicked(){
+	CCLog("key back clicked");
+	this->menuGoBackCallback(this);
+}
+
 
 void GameCollectionController::onEnter(){
-	
+	CCLog("Collection:onEnter");
+	this->setKeypadEnabled(true);
+
 	CCDirector::sharedDirector()->getTouchDispatcher()->addTargetedDelegate(this,1,true);
 	CCLayer::onEnter();
 }
 void GameCollectionController::onEnterTransitionDidFinish(){
+	CCLog("Collection:onEnterTransitionDidFinish");
 	CCLayer::onEnterTransitionDidFinish();
 }
 void GameCollectionController::onExitTransitionDidStart(){
+	CCLog("Collection:onExitTransitionDidStart");
 	CCLayer::onExitTransitionDidStart();
 }
 void GameCollectionController::onExit(){
+	CCLog("Collection:onExit");
 	CCDirector::sharedDirector()->getTouchDispatcher()->removeDelegate(this);
-	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("menu.plist");
-	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("insects.plist");
-	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("ambers.plist");
+//	CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("menu.plist");
+	//CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("insects.plist");
+	//CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("ambers.plist");
+	//CCSpriteFrameCache::sharedSpriteFrameCache()->removeSpriteFramesFromFile("collections.plist");
 	CCLayer::onExit();
 }

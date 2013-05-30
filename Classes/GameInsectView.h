@@ -14,73 +14,88 @@ class BaseInsectView :public CCLayer,public GameModelDelegate
 private:
 	GameViewDelegate* pViewDelegate;
 protected:
+	CC_SYNTHESIZE(int,_insectType,InsectType);
+	char* insectFrames[10];
+	unsigned int frameCount;
 	CCSprite* _insect;
-	BaseInsect* _insectModel;
+	Animal* _insectModel;
+
+	CCRect winRect;
 
 	CCAnimation *animation;
-	CCAction* animationAction;
+	CCSpeed* animationAction;
+	CCAnimation *kissAnimation;
+protected:
+	void cleanFrames();
 public:
-	void playAnimation(float velocity);//根据速度播放虫子行走的动画
+	CCSprite* getSprite();
+	virtual void initSprite();//初始化所有精灵图片
+	void playAnimation();//根据速度播放虫子行走的动画
 	void initAnimation();
+	virtual void initEyes(){};
+	void createSpriteByInsectType(int type);//创建身体底色
+	void changePlayVel(float speed);//改变动画速度
+	void playAttack(CCPoint attacker,CCPoint target);//播放攻击动画
+	void playKiss(CCPoint source,CCPoint des);//播放亲吻动画
+	void initAttack();//初始化攻击动画帧
+	void initKiss();//初始化亲吻动画帧
+	void end();
+	void endFinish();
+	void endKiss();
+	void finish();//结束
 public:
 	BaseInsectView();
 	virtual ~BaseInsectView();
-
-	virtual bool init(GameViewDelegate* pViewDelegate,BaseInsect* gameInsect);
-	LAYER_CREATE_FUNC_DOUBLE_PARAM(BaseInsectView,GameViewDelegate*,pViewDelegate,BaseInsect*,gameInsect);
-
+	virtual bool init(GameViewDelegate* pViewDelegate,Animal* gameInsect);
+	LAYER_CREATE_FUNC_DOUBLE_PARAM(BaseInsectView,GameViewDelegate*,pViewDelegate,Animal*,gameInsect);
 	virtual void testModelDelegate();
-
 	void update(float dt);
 };
 
-
-class GameInsectView :public CCLayer,public GameModelDelegate
-{
-private:
-	GameViewDelegate* pViewDelegate;
+class AntInsectView : public BaseInsectView{
 protected:
-	CCSprite* _insect;
-	BaseInsect* _insectModel;
-
-	CCAnimation *animation;
-	CCAction* animationAction;
+	CCAnimation *feelerNormalAnimation;//正常触角动画
+	CCAnimation *feelerCommunicateAnimation;//交流触角动画
 public:
-	void playAnimation(float velocity);//根据速度播放虫子行走的动画
-	void initAnimation();
-public:
-	GameInsectView();
-	virtual ~GameInsectView();
-
-	virtual bool init(GameViewDelegate* pViewDelegate,BaseInsect* gameInsect);
-	LAYER_CREATE_FUNC_DOUBLE_PARAM(GameInsectView,GameViewDelegate*,pViewDelegate,BaseInsect*,gameInsect);
-
-	virtual void testModelDelegate();
-
-	void update(float dt);
+	virtual ~AntInsectView();
+	virtual void initSprite();//初始化所有精灵图片
+	LAYER_CREATE_FUNC_DOUBLE_PARAM(AntInsectView,GameViewDelegate*,pViewDelegate,Animal*,gameInsect);
+	void initFeeler();
+	void initEyes();
+	void blink(float dt);//眨眼
 };
 
-class EnemyView :public CCLayer,public GameModelDelegate
-{
-private:
-	GameViewDelegate* pViewDelegate;
+class MantisInsectView : public BaseInsectView{
 protected:
-	CCSprite* _insect;
-	Enemy* _insectModel;
+	CCAnimation *feelerNormalAnimation;//正常触角动画
+	CCAnimation *eyeAnimation;
+public:
+	virtual ~MantisInsectView();
+	virtual void initSprite();//初始化所有精灵图片
+	LAYER_CREATE_FUNC_DOUBLE_PARAM(MantisInsectView,GameViewDelegate*,pViewDelegate,Animal*,gameInsect);
+	void initFeeler();
+	void initEyes();
+	void blink(float dt);//眨眼
+};
 
-	CCAnimation *animation;
-	CCAction* animationAction;	
+
+
+
+
+
+
+
+
+
+class EnemyView :public BaseInsectView
+{
 public:
-	void playAnimation(float velocity);//根据速度播放虫子行走的动画
-	void initAnimation();
-public:
-	EnemyView();
 	virtual ~EnemyView();
+	virtual void initSprite();
+	virtual void initEyes();
+	void blink(float dt);
 
-	virtual bool init(GameViewDelegate* pViewDelegate,Enemy* gameInsect);
-	LAYER_CREATE_FUNC_DOUBLE_PARAM(EnemyView,GameViewDelegate*,pViewDelegate,Enemy*,gameInsect);
-
-	virtual void testModelDelegate();
+	LAYER_CREATE_FUNC_DOUBLE_PARAM(EnemyView,GameViewDelegate*,pViewDelegate,Animal*,gameInsect);
 
 	void update(float dt);
 };

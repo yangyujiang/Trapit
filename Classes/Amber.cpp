@@ -3,11 +3,12 @@
 #include "RandomBy.h"
 #include "sqlite3.h"
 #include "Constant.h"
+#include "MyMath.h"
 
 USING_NS_CC;
 
 const char* COLLECTION="collection";
-//åœ¨COLLECTIONè¡¨ä¸­çš„åˆ—æ•°
+//ÔÚCOLLECTION±íÖĞµÄÁĞÊı
 const unsigned int _id=0;
 const unsigned int __enable=1;
 const unsigned int _used=2;
@@ -20,20 +21,24 @@ const unsigned int _descripHowToGet=8;
 	
 static vector<Amber*> AMBERS;
 
+//const char* descrip[]={MyMath::WStrToUTF8(L"·ßÅ­µÄÂìÒÏÀ¶çê").c_str(),""};
+
 Amber::Amber()
 {
+	nameSkill=new char[50];
 }
+
 
 Amber::~Amber()
 {
 	AMBERS.clear();
 }
 
+
 bool Amber::init(){
 	bool pRet=false;
 	do{ 	
 		CC_BREAK_IF(!CCSprite::init());
-
 
 		pRet=true;
 	}while(0);
@@ -45,27 +50,25 @@ int loadRecord( void * para, int n_column, char ** column_value, char ** column_
 { 
             CCLog("ID=%s,enable=%s,descripSkill=%s",column_value[0],column_value[__enable],column_value[_descripSkill]); 
             Amber *amber=(Amber*)para;
-			//amber=Amber::create();
-			//amber->id=1;//=column_value[_id];
-			amber->id=CCString::createWithFormat(column_value[_id])->intValue();
+			amber->setId(CCString::createWithFormat(column_value[_id])->intValue());
 			//CCLog("%d",amber->id);
-			amber->enable=CCString::createWithFormat(column_value[__enable])->boolValue();
-			amber->used=CCString::createWithFormat(column_value[_used])->boolValue();
-			amber->image=column_value[_imageName];
-			amber->descrip=column_value[_descrip];
-			amber->imageSkill=column_value[_imageSkillName];
-			amber->descripSkill=column_value[_descripSkill];
-			amber->nameSkill=column_value[_nameSkill];
-			amber->descripHowToGet=column_value[_descripHowToGet];
-			CCLog("id=%d",amber->id); 
-	CCLog("enable=%d",amber->enable); 
-	CCLog("used=%d",amber->used); 
-	CCLog("imageName=%s",amber->image); 
-	CCLog("descrip=%s",amber->descrip); 
-	CCLog("imageSkill=%s",amber->imageSkill); 
-	CCLog("descripSkill=%s",amber->descripSkill); 
-	CCLog("nameSkill=%s",amber->nameSkill); 
-	CCLog("descripHowToGet=%s",amber->descripHowToGet);
+			amber->setEnable(CCString::createWithFormat(column_value[__enable])->intValue()?1:0);
+			amber->setUsed(CCString::createWithFormat(column_value[_used])->intValue()?1:0);
+			amber->setImageName(column_value[_imageName]);
+			amber->setDescrip(column_value[_descrip]);
+			amber->setSkillImageName(column_value[_imageSkillName]);
+			amber->setSkillDescrip(column_value[_descripSkill]);
+			amber->setSkillName(column_value[_nameSkill]);
+			amber->setDescripHowToGet(column_value[_descripHowToGet]);
+			CCLog("id=%d",amber->getId()); 
+			CCLog("enable=%d",amber->getEnable()); 
+			CCLog("used=%d",amber->getUsed()); 
+			CCLog("imageName=%s",amber->getImageName()); 
+			CCLog("descrip=%s",amber->getDescrip()); 
+			CCLog("imageSkill=%s",amber->getSkillImageName()); 
+			CCLog("descripSkill=%s",amber->getSkillDescrip()); 
+			CCLog("nameSkill=%s",amber->getSkillName()); 
+			CCLog("descripHowToGet=%s",amber->getDescripHowToGet());
 	AMBERS.push_back(amber);
 			return 0; 
 } 
@@ -77,61 +80,64 @@ int loadRecordCount( void * para, int n_column, char ** column_value, char ** co
 			CCLog("column_value:%s,%s",column_value[0],column_value[1]);
 			bool enable=column_value[__enable]?1:0;
 			Amber *amber=Amber::create();
-			amber->id=CCString::createWithFormat(column_value[_id])->intValue();
+			amber->setId(CCString::createWithFormat(column_value[_id])->intValue());
 			//CCLog("%d",amber->id);
-			amber->enable=CCString::createWithFormat(column_value[__enable])->intValue()?1:0;
-			amber->used=CCString::createWithFormat(column_value[_used])->intValue()?1:0;
-			amber->image=column_value[_imageName];
-			amber->descrip=column_value[_descrip];
-			amber->imageSkill=column_value[_imageSkillName];
-			amber->descripSkill=column_value[_descripSkill];
-			amber->nameSkill=column_value[_nameSkill];
-			amber->descripHowToGet=column_value[_descripHowToGet];
+			amber->setEnable(CCString::createWithFormat(column_value[__enable])->intValue()?1:0);
+			amber->setUsed(CCString::createWithFormat(column_value[_used])->intValue()?1:0);
+			amber->setImageName(column_value[_imageName]);
+			amber->setDescrip(column_value[_descrip]);
+			amber->setSkillImageName(column_value[_imageSkillName]);
+			amber->setSkillDescrip(column_value[_descripSkill]);
+			amber->setSkillName(column_value[_nameSkill]);
+		//	char name[50];
+		//	strcpy(name,column_value[_nameSkill]);
+		//	amber->setSkillName(name);
+			amber->setDescripHowToGet(column_value[_descripHowToGet]);
 			AMBERS.push_back(amber);
+			CCLog("id=%d",amber->getId()); 
+			CCLog("enable=%d",amber->getEnable()); 
+			CCLog("used=%d",amber->getUsed()); 
+			CCLog("imageName=%s",amber->getImageName()); 
+			CCLog("descrip=%s",amber->getDescrip()); 
+			CCLog("imageSkill=%s",amber->getSkillImageName()); 
+			CCLog("descripSkill=%s",amber->getSkillDescrip()); 
+			CCLog("nameSkill=%s",amber->getSkillName()); 
+			CCLog("descripHowToGet=%s",amber->getDescripHowToGet());
             return 0; 
 } 
-
+/*
 vector<Amber*> Amber::getAmbersFromSQLite(){
 	//vector<Amber*> ambers;
 	
-	sqlite3 *pDB = NULL;//æ•°æ®åº“æŒ‡é’ˆ 
-	char * errMsg = NULL;//é”™è¯¯ä¿¡æ¯ 
-	std::string sqlstr;//SQLæŒ‡ä»¤ 
+	sqlite3 *pDB = NULL;//Êı¾İ¿âÖ¸Õë 
+	char * errMsg = NULL;//´íÎóĞÅÏ¢ 
+	std::string sqlstr;//SQLÖ¸Áî 
 	char sql_str[1000]={0};
-	int result;//sqlite3_execè¿”å›å€¼ 
+	int result;//sqlite3_exec·µ»ØÖµ 
  
-	//æ‰“å¼€ä¸€ä¸ªæ•°æ®åº“ï¼Œå¦‚æœè¯¥æ•°æ®åº“ä¸å­˜åœ¨ï¼Œåˆ™åˆ›å»ºä¸€ä¸ªæ•°æ®åº“æ–‡ä»¶ 
+	//´ò¿ªÒ»¸öÊı¾İ¿â£¬Èç¹û¸ÃÊı¾İ¿â²»´æÔÚ£¬Ôò´´½¨Ò»¸öÊı¾İ¿âÎÄ¼ş 
 	std::string sqlpath= CCFileUtils::sharedFileUtils()->getWriteablePath()+"data.db";
 	CCLog("%s",sqlpath.c_str());
 	result = sqlite3_open(sqlpath.c_str(), &pDB); 
 	if( result != SQLITE_OK ) 
-	      CCLog( "æ‰“å¼€æ•°æ®åº“å¤±è´¥ï¼Œé”™è¯¯ç :%d ï¼Œé”™è¯¯åŸå› :%s\n" , result, errMsg ); 
-	else CCLog("æˆåŠŸ");
+	      CCLog( "´ò¿ªÊı¾İ¿âÊ§°Ü£¬´íÎóÂë:%d £¬´íÎóÔ­Òò:%s\n" , result, errMsg ); 
+	else CCLog("´ò¿ªÊı¾İ¿â³É¹¦");
   
 	sprintf(sql_str, "create table %s( ID integer primary key autoincrement,enable integer,used integer, image nvarchar(32),descrip nvarchar(32),imageSkill nvarchar(32),nameSkill nvarchar(32),descripSkill nvarchar(64),descripHowToGet nvarchar(32) )",COLLECTION);
-	 //åˆ›å»ºè¡¨ï¼Œè®¾ç½®IDä¸ºä¸»é”®ï¼Œä¸”è‡ªåŠ¨å¢åŠ  
+	 //´´½¨±í£¬ÉèÖÃIDÎªÖ÷¼ü£¬ÇÒ×Ô¶¯Ôö¼Ó 
 	result=sqlite3_exec( pDB,sql_str, NULL, NULL, &errMsg );
 	if( result != SQLITE_OK ) 
-	      CCLog( "åˆ›å»ºè¡¨å¤±è´¥ï¼Œé”™è¯¯ç :%d ï¼Œé”™è¯¯åŸå› :%s\n" , result, errMsg ); 
-	sprintf(sql_str,"insert into %s(enable,used,image,descrip,imageSkill,nameSkill,descripSkill,descripHowToGet) values(1,0,'amber_1.png','æ„¤æ€’çš„èš‚èšè“ç€','amber_1.png','æ˜†è™«ä¹‹æ€’','ä½¿ç”¨åï¼Œæ‰€æœ‰æ˜†è™«è¿›å…¥æ”»å‡»çŠ¶æ€ã€‚å½“å¿ƒä½ çš„æ‰‹æŒ‡','å—è³è‚æ”»å‡»æ—¶å®¹æ˜“å‡ºç°')",COLLECTION);
-	//æ’å…¥æ•°æ® 
-	//sqlstr=" insert into Collection( name ) values ( 'å…‹å¡' ) "; 
+	      CCLog( "´´½¨±íÊ§°Ü£¬´íÎóÂë:%d £¬´íÎóÔ­Òò:%s\n" , result, errMsg ); 
+	else CCLog("´´½¨±í³É¹¦");
+	//std::string str=MyMath::WStrToUTF8(L"insert into collection(enable,used,image,descrip,imageSkill,nameSkill,descripSkill,descripHowToGet) values(1,0,'amber_1.png','·ßÅ­µÄÂìÒÏÀ¶çê','amber_1.png','À¥³æÖ®Å­','Ê¹ÓÃºó,ËùÓĞÀ¥³æ½øÈë¹¥»÷×´Ì¬.µ±ĞÄÄãµÄÊÖÖ¸','ÊÜó«òë¹¥»÷Ê±ÈİÒ×³öÏÖ')");
+	sprintf(sql_str,"insert into %s(enable,used,image,descrip,imageSkill,nameSkill,descripSkill,descripHowToGet) values(1,0,'amber_1.png','·ßÅ­µÄÂìÒÏÀ¶çê','amber_1.png','À¥³æÖ®Å­','Ê¹ÓÃºó,ËùÓĞÀ¥³æ½øÈë¹¥»÷×´Ì¬.µ±ĞÄÄãµÄÊÖÖ¸','ÊÜó«òë¹¥»÷Ê±ÈİÒ×³öÏÖ')",COLLECTION);
+	//sprintf(sql_str,"%s",str.c_str());
+	//²åÈëÊı¾İ 
+	//sqlstr=" insert into Collection( name ) values ( '¿ËÈû' ) "; 
 	result = sqlite3_exec( pDB, sql_str , NULL, NULL, &errMsg ); 
 	if(result != SQLITE_OK ) 
-	      CCLog( "æ’å…¥è®°å½•å¤±è´¥ï¼Œé”™è¯¯ç :%d ï¼Œé”™è¯¯åŸå› :%s\n" , result, errMsg ); 
+	      CCLog( "²åÈë¼ÇÂ¼Ê§°Ü£¬´íÎóÂë:%d £¬´íÎóÔ­Òò:%s\n" , result, errMsg ); 
 	  
-	/*//æ’å…¥æ•°æ® 
-	sqlstr=" insert into Collection( name ) values ( 'è‘«èŠ¦å¨ƒ' ) "; 
-	result = sqlite3_exec( pDB, sqlstr.c_str() , NULL, NULL, &errMsg ); 
-	if(result != SQLITE_OK ) 
-	      CCLog( "æ’å…¥è®°å½•å¤±è´¥ï¼Œé”™è¯¯ç :%d ï¼Œé”™è¯¯åŸå› :%s\n" , result, errMsg ); 
- 
-	//æ’å…¥æ•°æ® 
-	sqlstr=" insert into Collection( name ) values ( 'æ“å¤©æŸ±' ) "; 
-	result = sqlite3_exec( pDB, sqlstr.c_str() , NULL, NULL, &errMsg ); 
-	if(result != SQLITE_OK ) 
-	      CCLog( "æ’å…¥è®°å½•å¤±è´¥ï¼Œé”™è¯¯ç :%d ï¼Œé”™è¯¯åŸå› :%s\n" , result, errMsg ); 
-	 */
 	int count=0;
 	sprintf(sql_str,"select * from %s",COLLECTION);
 	CCLog("%s",sql_str);
@@ -139,44 +145,48 @@ vector<Amber*> Amber::getAmbersFromSQLite(){
 	CCLog("count:%d",count);
 	CCLog("%d",AMBERS.size());
 
-	 //å…³é—­æ•°æ®åº“ 
+	 //¹Ø±ÕÊı¾İ¿â 
 	sqlite3_close(pDB); 
 	//return ambers;
 	return AMBERS;
 }
+*/
+bool Amber::getEnableForKey(int id){
+	char key[20]={0};
+	sprintf(key,"%d_enable",id);
+	return CCUserDefault::sharedUserDefault()->getBoolForKey(key,false);
+}
+bool Amber::getUsedForKey(int id){
+	char key[20]={0};
+	sprintf(key,"%d_used",id);
+	return CCUserDefault::sharedUserDefault()->getBoolForKey(key,false);
+}
+void Amber::writeEnableForKey(int id,bool p){
+	char key[20]={0};
+	sprintf(key,"%d_enable",id);
+	CCUserDefault::sharedUserDefault()->setBoolForKey(key,p);
+}
+void Amber::writeUsedForKey(int id,bool p){
+	char key[20]={0};
+	sprintf(key,"%d_used",id);
+	CCUserDefault::sharedUserDefault()->setBoolForKey(key,p);
+}
 
-//ä¸€äº›å°è£…
-/*
-char* Amber::getDescrip(){
-	return descrip;
+vector<Amber*> Amber::getAmbers(int count){
+	if(AMBERS.size()>0) return AMBERS;
+
+	for(int i=0;i<count;i++){
+		Amber* amber=Amber::create();
+		amber->setEnable(getEnableForKey(i));
+		amber->setUsed(getUsedForKey(i));
+		AMBERS.push_back(amber);
+	}
+	return AMBERS;
 }
-char* Amber::getDescripHowToGet(){
-	return descripHowToGet;
+void Amber::writeAmbers(){
+	for(int i=0;i<AMBERS.size();i++){
+		Amber::writeEnableForKey(i,AMBERS[i]->getEnable());
+		Amber::writeUsedForKey(i,AMBERS[i]->getUsed());
+	}
+	CCUserDefault::sharedUserDefault()->flush();
 }
-char* Amber::getDescripSkill(){
-	return descripSkill;
-}
-char* Amber::getIamgeName(){
-	return image;
-}
-char* Amber::getImageSkillName(){
-	return imageSkill;
-}
-unsigned int Amber::getId(){
-	return id;
-}
-char* Amber::getSkillName(){
-	return nameSkill;
-}
-void Amber::setUsed(bool used){
-	this->used=used;
-}
-bool Amber::getUsed(){
-	return used;
-}
-void Amber::setEnable(bool enable){
-	this->enable=enable;
-}
-bool Amber::getEnable(){
-	return enable;
-}*/

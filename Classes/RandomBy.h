@@ -65,9 +65,10 @@ class CCFollowSprite : public cocos2d::CCActionInterval
 	float m_velocity;
 	CCPoint m_startPos;
 	float m_timeCount;
+	CC_SYNTHESIZE(int,min_dis,MinDistance);
 public:
     /** initializes the action */
-    bool initWithDuration(float duration, const float velocity,CCNode* target);
+    bool initWithDuration(float duration, const float velocity,CCNode* target,int minDis);
 
     virtual CCObject* copyWithZone(cocos2d::CCZone* pZone);
     virtual void startWithTarget(cocos2d::CCNode *pTarget);
@@ -76,10 +77,50 @@ public:
 
 public:
     /** creates the action */
-    static CCFollowSprite* create(float duration,  const float velocity,CCNode* target);
+    static CCFollowSprite* create(float duration,  const float velocity,CCNode* target,int minDis);
+
+};
+//CCHeadRotateTo.h
+class CCHeadRotateTo : public cocos2d::CCActionInterval
+{
+	protected:
+	CC_SYNTHESIZE(float ,m_length,Length);
+	CC_SYNTHESIZE(float ,m_angle,Angle);
+	CCPoint m_head;
+public:
+    /** initializes the action */
+    bool initWithDuration(float duration,float length,float angle);
+
+    virtual CCObject* copyWithZone(cocos2d::CCZone* pZone);
+    virtual void startWithTarget(cocos2d::CCNode *pTarget);
+    virtual void update(float time);
+	CCHeadRotateTo(){};
+
+public:
+    /** creates the action */
+    static CCHeadRotateTo* create(float duration,  float length,float angle);
 
 };
 
+
+//CCLookAt.h
+class CCLookAt: public cocos2d::CCActionInterval
+{
+	protected:
+	CCNode* m_followTarget;
+public:
+    /** initializes the action */
+    bool initWithDuration(float duration,CCNode* target);
+    virtual CCObject* copyWithZone(cocos2d::CCZone* pZone);
+    virtual void startWithTarget(cocos2d::CCNode *pTarget);
+    virtual void update(float time);
+	CCLookAt(){};
+
+public:
+    /** creates the action */
+    static CCLookAt* create(float duration,CCNode* target);
+
+};
 
 // 定义一个结构来包含确定椭圆的参数   
 typedef struct _lrTuoyuanConfig {  

@@ -1,4 +1,5 @@
 #include "RandomBy.h"
+#include "MyMath.h"
 
 USING_NS_CC;
 
@@ -87,6 +88,7 @@ void CCRandomBy::update(float time)
 			//CCLog("(%f)",distance);
 			//CCLog("degree:%f",degree);
 			//CCLog("(%f,%f)",m_delta.x,m_delta.y);
+			//CCLog("randomM_fDuration:%f",m_fDuration);
 			_countTime=m_fDuration*time;
 			break;
 		}//switch
@@ -173,7 +175,7 @@ void CCStepBack::update(float time)
 {
 //	CCLog("%dCCStepBack:running",m_pTarget->getTag());
 	//CCLog("(%f,%f)",m_pTarget->getPositionX(),m_pTarget->getPositionY());
-	
+	//CCLog("fdsdutation:%f",this->m_fDuration);
     if (m_pTarget)
     {
 		CCPoint newPosition=ccp(m_startPosition.x - m_delta.x*time ,m_startPosition.y - m_delta.y*time);
@@ -190,21 +192,22 @@ void CCStepBack::update(float time)
 //
 //CCFollowSprite.cpp
 //
-CCFollowSprite* CCFollowSprite::create(float duration,  const float velocity,CCNode* target)
+CCFollowSprite* CCFollowSprite::create(float duration,  const float velocity,CCNode* target,int minDis)
 {
     CCFollowSprite *pfollow = new CCFollowSprite();
-    pfollow->initWithDuration(duration, velocity,target);
+    pfollow->initWithDuration(duration, velocity,target,minDis);
     pfollow->autorelease();
 
     return pfollow;
 }
 
-bool CCFollowSprite::initWithDuration(float duration,  const float velocity,CCNode* target)
+bool CCFollowSprite::initWithDuration(float duration,  const float velocity,CCNode* target,int minDis)
 {
     if (CCActionInterval::initWithDuration(duration))
     {
         m_velocity = velocity;
 		m_followTarget=target;
+		min_dis=minDis;
         return true;
     }
 
@@ -228,19 +231,12 @@ CCObject* CCFollowSprite::copyWithZone(CCZone *pZone)
 
     CCActionInterval::copyWithZone(pZone);
 
-    pCopy->initWithDuration(m_fDuration, m_velocity,m_followTarget);
+    pCopy->initWithDuration(m_fDuration, m_velocity,m_followTarget,min_dis);
 
     CC_SAFE_DELETE(pNewZone);
     return pCopy;
 }
 
-float getDDirection(CCPoint p1,CCPoint p2){
-	float angle=asin((p2.x-p1.x)/(ccpDistance(p1,p2)))*180.f/M_PI;
-	if(p1.x<=p2.x&&p1.y>=p2.y) angle=180-angle;
-	else if(p1.x>=p2.x&&p1.y>=p2.y) angle=-180-angle;
-
-	return angle;
-}
 void CCFollowSprite::startWithTarget(CCNode *pTarget)
 {
 	//CCLog("CCFollowSprite:startWithTarget");
@@ -252,15 +248,99 @@ void CCFollowSprite::update(float time)
 {
     if (m_pTarget)
     {
+		if(m_followTarget==NULL) return;
 		float duration=(time-m_timeCount)*this->m_fDuration;
 		m_timeCount=time;
 	   CCPoint locPos=m_pTarget->getPosition();
-	   float degree=getDDirection(locPos,m_followTarget->getPosition());
-		m_pTarget->setRotation(degree-90);
-		float angle=CC_DEGREES_TO_RADIANS(degree);
+		if(ccpDistance(locPos,m_followTarget->getPosition())<min_dis) return;
+	   float degree=MyMath::getDirection(locPos,m_followTarget->getPosition());
+		m_pTarget->setRotation(degree);
+	     
+		float angle=CC_DEGREES_TO_RADIANS(degree+90);
 		CCPoint delta=ccp(m_velocity*sin(angle)*duration,m_velocity*cos(angle)*duration);
 		CCPoint newPos=ccpAdd(locPos,delta);
 		m_pTarget->setPosition(newPos);
+    }else CCLog("target is NULL");
+}  
+
+//
+//CCHeadRotateTo.cpp
+//
+CCHeadRotateTo* CCHeadRotateTo::create(float duration, float length,float angle)
+{
+    CCHeadRotateTo *pfollow = new CCHeadRotateTo();
+    pfollow->initWithDuration(duration, length,angle);
+    pfollow->autorelease();
+
+    return pfollow;
+}
+
+bool CCHeadRotateTo::initWithDuration(float duration,  float length,float angle)
+{
+    if (CCActionInterval::initWithDuration(duration))
+    {
+       this->setLength(length);
+	   this->setAngle(angle);
+        return true;
+    }
+
+    return false;
+}
+
+CCObject* CCHeadRotateTo::copyWithZone(CCZone *pZone)
+{
+    CCZone* pNewZone = NULL;
+    CCHeadRotateTo* pCopy = NULL;
+    if(pZone && pZone->m_pCopyObject) 
+    {
+        //in case of being called at sub class
+        pCopy = (CCHeadRotateTo*)(pZone->m_pCopyObject);
+    }
+    else
+    {
+        pCopy = new CCHeadRotateTo();
+        pZone = pNewZone = new CCZone(pCopy);
+    }
+
+    CCActionInterval::copyWithZone(pZone);
+
+    pCopy->initWithDuration(m_fDuration, m_length,m_angle);
+
+    CC_SAFE_DELETE(pNewZone);
+    return pCopy;
+}
+
+void CCHeadRotateTo::startWithTarget(CCNode *pTarget)
+{
+	//CCLog("CCHeadRotateTo:startWithTarget");
+    CCActionInterval::startWithTarget(pTarget);
+	
+		CCPoint originPos=pTarget->getPosition();
+		float originAngle=pTarget->getRotation();
+		float originRadians=CC_DEGREES_TO_RADIANS(originAngle);
+		float length=this->getLength();
+		m_head=ccp(originPos.x+length*sin(originRadians),originPos.y+length*cos(originRadians));
+}
+void CCHeadRotateTo::update(float time)
+{
+    if (m_pTarget)
+    {
+//		CCPoint originPos=m_pTarget->getPosition();
+		CCPoint desPos;
+		float originAngle=m_pTarget->getRotation();
+	//	float originRadians=CC_DEGREES_TO_RADIANS(originAngle);
+		float desAngle=originAngle+(this->getAngle()-originAngle)*time;
+		float desRadians=CC_DEGREES_TO_RADIANS(desAngle);
+		float length=this->getLength();
+		desPos=ccp(m_head.x-length*sin(desRadians),m_head.y-length*cos(desRadians));
+
+		m_pTarget->setPosition(desPos);
+		m_pTarget->setRotation(desAngle);
+	//	CCLog("originPos:%f,%f",originPos.x,originPos.y);
+	CCLog("desPos:%f,%f",desPos.x,desPos.y);
+	CCLog("originAngle:%f,desAngle:%f",originAngle,desAngle);
+	//CCLog("originRadian:%f,desRadian:%f",originRadians,desRadians);
+	CCLog("length:%f",length);
 		
     }else CCLog("target is NULL");
 }  
@@ -268,6 +348,68 @@ void CCFollowSprite::update(float time)
 
 
 
+
+//
+//CCLookAt.cpp
+//
+CCLookAt* CCLookAt::create(float duration,  CCNode* target)
+{
+    CCLookAt *pLookAt = new CCLookAt();
+    pLookAt->initWithDuration(duration,target);
+    pLookAt->autorelease();
+
+    return pLookAt;
+}
+
+bool CCLookAt::initWithDuration(float duration, CCNode* target)
+{
+    if (CCActionInterval::initWithDuration(duration))
+    {
+		m_followTarget=target;
+        return true;
+    }
+
+    return false;
+}
+
+CCObject* CCLookAt::copyWithZone(CCZone *pZone)
+{
+    CCZone* pNewZone = NULL;
+    CCLookAt* pCopy = NULL;
+    if(pZone && pZone->m_pCopyObject) 
+    {
+        //in case of being called at sub class
+        pCopy = (CCLookAt*)(pZone->m_pCopyObject);
+    }
+    else
+    {
+        pCopy = new CCLookAt();
+        pZone = pNewZone = new CCZone(pCopy);
+    }
+    CCActionInterval::copyWithZone(pZone);
+    pCopy->initWithDuration(m_fDuration,m_followTarget);
+
+    CC_SAFE_DELETE(pNewZone);
+    return pCopy;
+}
+
+void CCLookAt::startWithTarget(CCNode *pTarget)
+{
+	//CCLog("CCHeadRotateTo:startWithTarget");
+    CCActionInterval::startWithTarget(pTarget);
+}
+void CCLookAt::update(float time)
+{
+    if (m_pTarget&&m_followTarget!=NULL)
+    {
+		if(m_followTarget==NULL) return;
+		m_pTarget->setRotation(MyMath::getDirection(m_pTarget->getPosition(),
+			m_followTarget->getPosition()));
+	//	CCLog("%f,%f",m_pTarget->getPositionX(),m_pTarget->getPositionY());
+	//	CCLog("target:%f,%f",m_followTarget->getPositionX(),m_followTarget->getPositionY());
+	//	CCLog("rotation:%f",m_pTarget->getRotation());
+    }else CCLog("target is NULL");
+}
 
 
 

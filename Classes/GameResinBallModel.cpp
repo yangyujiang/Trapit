@@ -6,7 +6,8 @@
 
 USING_NS_CC;
 
-const int Origin_blood=100;
+const int Origin_blood=1000;//³õÊ¼Á¿
+const int times=5;//Ëõ·Å´ÎÊý
 const int tag_PolySprite=123;//¶à±ßÐÎÍ¼Æ¬µÄtagË÷Òý
 //È«¾Öº¯Êý
 //¸ù¾ÝÁ½¸öbodyºÍÒ»¸ö½Úµã´´½¨Ò»¸öÐý×ª¹Ø½Ú²¢·µ»Ø
@@ -30,14 +31,16 @@ b2Joint* createRevoluteJoint(b2World* world,b2Body* body1,b2Body* body2,b2Vec2 a
 //GameResinBallModel.cpp
 //
 GameResinBallModel::GameResinBallModel():_ballBody(NULL),_world(NULL)
-	,_currentBlockHeight(0),_currentBlockWidth(0),attack(10)
+	,_currentBlockHeight(0),_currentBlockWidth(0),attack(50)
 	,coveredInsect(NULL),lastPosition(ccp(0,0)),_radius(0),blood(Origin_blood),countBlood(0)
 {
   BALL_FRICTION=0.1f;//ÊµÐÄÇòÓëµØÃæµÄÄ¦²ÁÏµÊý
-  BALL_GRAVITY=150;//ÊµÐÄÇòÖØÁ¦£¨N£©,¹Ì¶¨²»±ä
+  BALL_GRAVITY=150*2;//ÊµÐÄÇòÖØÁ¦£¨N£©,¹Ì¶¨²»±ä
   BLOCK_FRICTION=2.f;//0.6f;//Ã¿Ò»¸öÐ¡·½¿éÓëµØÃæµÄÄ¦²ÁÏµÊý
   BLOCK_GRAVITY=0.8f;//Ã¿Ò»¸öÐ¡·½¿éµÄÖØÁ¦£¨N£©£¬¹Ì¶¨²»±ä
   MAX_VELOCITY=18;//Ö÷½ÇÊ÷Ö¬ÇòµÄ×î´óËÙ¶È£¨Ã×/Ãë£©
+
+  this->setReached(Origin_blood*(times-1)*1.f/times);
 }
 
 
@@ -62,6 +65,9 @@ void GameResinBallModel::initBallBody(float32 radius){
 	lastPosition=this->getPosition();
 //	CCLog("resinBallBody:%f,%f",centerX,centerY);
 
+	CCNode* realBall=CCNode::create();
+	this->addChild(realBall,0,ID_REAL_BALL);
+
 	b2Filter filter;
 	filter.groupIndex=k_resinBallBodyGroup;
 	filter.categoryBits=k_resinBallRealCategory;
@@ -69,6 +75,7 @@ void GameResinBallModel::initBallBody(float32 radius){
 	_ballBody=B2EasyBox2D::createCircle(_world,centerX,centerY,radius,this,&filter);
 	b2Fixture* fixture=_ballBody->GetFixtureList();
 	fixture->SetRestitution(0);
+	fixture->SetUserData(realBall);
 	_ballBody->SetFixedRotation(true);
 	
 	//´´½¨Ò»¸ösensorFixture, ÓÃÀ´Óë³æ×Ó¼ì²â¿ÉÖØµþµÄÅö×²
@@ -79,10 +86,14 @@ void GameResinBallModel::initBallBody(float32 radius){
 	sensorFilter.categoryBits=k_resinBallSensorCategory;
 	sensorFilter.maskBits=k_resinBallSensorMask;
 
+	CCNode* sensorId=CCNode::create();
+	this->addChild(sensorId,0,ID_SENSOR_BALL);
+
 	b2FixtureDef sensorDef;
 	sensorDef.shape=&sensorShape;
 	sensorDef.filter=sensorFilter;
 	sensorDef.isSensor=true;
+	sensorDef.userData=sensorId;
 	_sensorBall=_ballBody->CreateFixture(&sensorDef);
 	
 	//_delegateBall=B2EasyBox2D::createCircle(_world,centerX,centerY,radius+1,false,this,10.0f,0.8f,0,false,NULL,true);
@@ -154,16 +165,17 @@ void GameResinBallModel::createCircleBridge(int number,float32 radius){//¸ù¾ÝÔ²»
 
 	CCTexture2D *texture=CCTextureCache::sharedTextureCache()->addImage("amber_wai.png");
 	CCSprite* block=CCSprite::createWithTexture(texture,CCRectMake(0,0,_currentBlockWidth,_currentBlockHeight));
-	block->setTag(TAG_BLOCK);
+	//block->setTag(TAG_BLOCK);
 	block->setPosition(ccpSub(ccp(bx,by),this->getPosition()));
 	block->setRotation(-angle*180/M_PI);
 	//CCLog("sprite:%f,%f",block->getPositionX(),block->getPositionY());
 	//CCLog("CCNode:%f,%f",this->getPositionX(),this->getPositionY());
-	addChild(block,10);
+	addChild(block,10,ID_BLOCK);
 
 	b2Body *firstBody=B2EasyBox2D::createBox(_world,bx,by,segmentWidth,segmentHeight,block,&filter);
 	firstBody->SetTransform(firstBody->GetWorldCenter(),angle);
 	firstBody->GetFixtureList()->SetRestitution(0);
+	firstBody->GetFixtureList()->SetUserData(block);
 	_blocks.push_back(firstBody);//´æÈë_blocksÊý×éÖÐ
 
 	b2Body *body;//µ±Ç°body
@@ -178,13 +190,14 @@ void GameResinBallModel::createCircleBridge(int number,float32 radius){//¸ù¾ÝÔ²»
 
 		//´´½¨ÓÐ·½ÏòµÄ¾ØÐÎ¸ÕÌå£¬ºÏ³É×ÜµÄÔ²ÐÎ¸ÕÌå
 	CCSprite* block=CCSprite::createWithTexture(texture,CCRectMake(0,0,_currentBlockWidth,_currentBlockHeight));
-	block->setTag(TAG_BLOCK);
+//	block->setTag(TAG_BLOCK);
 	block->setPosition(ccpSub(ccp(bx,by),this->getPosition()));
 	block->setRotation(-angle*180/M_PI);
-	addChild(block,10);
+	addChild(block,10,ID_BLOCK);
 		body=B2EasyBox2D::createBox(_world,bx,by,segmentWidth,segmentHeight,block,&filter);
 		body->SetTransform(body->GetWorldCenter(),angle);//ÉèÖÃ½Ç¶È
 		body->GetFixtureList()->SetRestitution(0);
+		firstBody->GetFixtureList()->SetUserData(block);
 		_blocks.push_back(body);//´æÈë_blocksÊý×éÖÐ
 		//¶¨Òå½Úµã£¬Á½Ð¡·½¿éÏà½»´¦µã×ø±êµÄ¹«Ê½Îª£¨r*cos(0.5*2*pi/n+k*2*pi/n),r*sin(0.5*2*pi/n+k*2*pi/n)£©+centerXY
 		b2Vec2 anchor=b2Vec2((radius*cos((2*i-1)*alta)+getPositionX())/PTM_RATIO,(radius*sin((2*i-1)*alta)+getPositionY())/PTM_RATIO);		
@@ -203,6 +216,14 @@ void GameResinBallModel::createCircleBridge(int number,float32 radius){//¸ù¾ÝÔ²»
 
 void GameResinBallModel::initObserver(GameModelDelegate* pDelegate){
 	_observerDelegate=pDelegate;
+}
+
+void GameResinBallModel::reduceBodyVel(float scale){
+	b2Vec2 vel=_ballBody->GetLinearVelocity();
+	b2Vec2 newVel=b2Vec2(vel.x*scale,vel.y*scale);
+	CCLog("velBeforeReduce:%f",vel.Length());
+	_ballBody->SetLinearVelocity(newVel);
+	CCLog("velAfterReduce:%f",newVel.Length());
 }
 
 void GameResinBallModel::accelerateCallBack(CCAcceleration* pAccelerationValue){//¼ÓËÙÆ÷±ä»¯Ê±£¨ÇãÐ±ÊÖ»úÆÁÄ»£©µÄ»Øµ÷º¯Êý
@@ -308,8 +329,34 @@ void GameResinBallModel::initPolygonTexture(){
 		cPolySprite *csp = cPolySprite::create(fileName, points, count, index);
 		csp->setTag(tag_PolySprite);
 		this->addChild(csp);
-		csp->setAnchorPoint(ccp(0.5,0.5));
-		//csp->setPosition(ccp(500,300));
+		//csp->setAnchorPoint(ccp(0.5,0.5));
+		/*
+		CCActionInterval *colorAction = CCRepeatForever::create((CCActionInterval *)CCSequence::create(
+        CCTintTo::create(0.2f, 255, 0, 0),
+        CCTintTo::create(0.2f, 0, 255, 0),
+        CCTintTo::create(0.2f, 0, 0, 255),
+        CCTintTo::create(0.2f, 0, 255, 255),
+        CCTintTo::create(0.2f, 255, 255, 0),
+        CCTintTo::create(0.2f, 255, 0, 255),
+        CCTintTo::create(0.2f, 255, 255, 255),
+        NULL));
+		csp->runAction(colorAction);
+		csp->runAction(CCMoveBy::create(4,ccp(100,100)));
+		csp->runAction( CCRepeatForever::create((CCActionInterval *)CCSequence::create(
+        CCTintTo::create(0.2f, 255, 0, 0),
+        CCTintTo::create(0.2f, 0, 255, 0),
+        CCTintTo::create(0.2f, 0, 0, 255),
+        CCTintTo::create(0.2f, 0, 255, 255),
+        CCTintTo::create(0.2f, 255, 255, 0),
+        CCTintTo::create(0.2f, 255, 0, 255),
+        CCTintTo::create(0.2f, 255, 255, 255),
+        NULL)));*/
+		//csp->runAction(CCFadeOut::create(4));
+
+	//	MYCCSprite* p2=MYCCSprite::create("cup.png");
+	//	p2->setPosition(ccp(0,0));
+	//	this->addChild(p2);
+	//	p2->runAction(colorAction);
 	}
 }
 
@@ -325,8 +372,10 @@ void GameResinBallModel::shrinkResinBallBody(float32 scale){
 		_world->DestroyJoint(_blockJoints[i]);
 	}
 	for(unsigned int i=0;i<_blocks.size();i++){
-		this->removeChild((CCNode*)_blocks[i]->GetUserData(),true);
+		CCNode* userData=(CCNode*)_blocks[i]->GetUserData();
 		_world->DestroyBody(_blocks[i]);
+		this->removeChild(userData,true);
+	//	_blocks[i]->GetFixtureList()->GetShape()->set
 	}
 	_blockJoints.clear();
 	_blocks.clear();
@@ -341,9 +390,9 @@ void GameResinBallModel::shrinkResinBallBody(float32 scale){
 	CCLog("_radius:%f",_radius);
 }
 void GameResinBallModel::shrinkResinByBlood(){
-	countBlood=(int)blood%(Origin_blood/3);
-	if(countBlood==1){
-	//	this->shrinkResinBallBody(0.8);
+	if(blood<=this->getReached()){
+		this->setReached(this->getReached()-Origin_blood/times);
+		this->shrinkResinBallBody(0.8f);
 	}
 }
 
@@ -362,7 +411,7 @@ void GameResinBallModel::update(float dt){
 			userData->setRotation(-body->GetAngle()*180/M_PI);
 		}
 	}
-	this->updatePolygonTexture();
+	//this->updatePolygonTexture();
 
 	if(!_observerDelegate) return;
 
@@ -372,29 +421,33 @@ void GameResinBallModel::update(float dt){
 }
 
 void GameResinBallModel::attackInsect(BaseInsect* insect,float reducedBlood){
-	/*if(insect->attacked(reducedBlood)){
-		coveredInsect=NULL;
-	}else blood-=reducedBlood;*/
+	insect->covered(reducedBlood);
 }
 bool GameResinBallModel::usedUp(){
 	return blood<=0;
 }
+
+//Óë³æ×ÓµÄ½»»¥
+void GameResinBallModel::attackedByEnemy(int attack){
+	this->setBlood(this->getBlood()-attack);
+}
+
 //
 //Óë³æ×ÓµÄÅö×²¼ì²â
 //
-void GameResinBallModel::beginContact(BaseInsect* insect){
+void GameResinBallModel::beginCover(BaseInsect* insect){
 	coveredInsect=insect;
 	//isCoverInsect=true;
 }
-void GameResinBallModel::endContact(){
+void GameResinBallModel::endCover(){
 //	isCoverInsect=false;
 	coveredInsect=NULL;
 }
-void GameResinBallModel::handleContactWithInsect(float dt){
-	if(coveredInsect!=NULL){
+void GameResinBallModel::coveringInsect(float dt){
+	if(coveredInsect!=NULL&&!coveredInsect->isOutOfGas()){
 		float reducedBlood=attack*dt;
 		this->attackInsect(coveredInsect,reducedBlood);
-	}
+	}else coveredInsect=NULL;
 }
 
 

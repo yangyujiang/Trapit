@@ -4,27 +4,14 @@
     <dict>
         <key>frames</key>
         <dict>
-            <key>btn_play.png</key>
-            <dict>
-                <key>frame</key>
-                <string>{{407,501},{440,153}}</string>
-                <key>offset</key>
-                <string>{-1,1}</string>
-                <key>rotated</key>
-                <false/>
-                <key>sourceColorRect</key>
-                <string>{{1,0},{440,153}}</string>
-                <key>sourceSize</key>
-                <string>{444,155}</string>
-            </dict>
             <key>level_1.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{147,501},{218,258}}</string>
+                <string>{{645,221},{218,258}}</string>
                 <key>offset</key>
                 <string>{-1,0}</string>
                 <key>rotated</key>
-                <true/>
+                <false/>
                 <key>sourceColorRect</key>
                 <string>{{0,1},{218,258}}</string>
                 <key>sourceSize</key>
@@ -33,11 +20,11 @@
             <key>level_2.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{221,721},{217,259}}</string>
+                <string>{{718,2},{217,259}}</string>
                 <key>offset</key>
                 <string>{-4,-11}</string>
                 <key>rotated</key>
-                <false/>
+                <true/>
                 <key>sourceColorRect</key>
                 <string>{{1,38},{217,259}}</string>
                 <key>sourceSize</key>
@@ -85,15 +72,15 @@
             <key>scene_2.png</key>
             <dict>
                 <key>frame</key>
-                <string>{{147,2},{496,497}}</string>
+                <string>{{221,501},{495,495}}</string>
                 <key>offset</key>
-                <string>{0,0}</string>
+                <string>{-1,1}</string>
                 <key>rotated</key>
                 <false/>
                 <key>sourceColorRect</key>
-                <string>{{2,1},{496,497}}</string>
+                <string>{{0,0},{495,495}}</string>
                 <key>sourceSize</key>
-                <string>{500,499}</string>
+                <string>{497,497}</string>
             </dict>
             <key>scene_3.png</key>
             <dict>
@@ -118,7 +105,7 @@
             <key>size</key>
             <string>{1024,1024}</string>
             <key>smartupdate</key>
-            <string>$TexturePacker:SmartUpdate:8ac78b5b833517545782e2bf2253637b$</string>
+            <string>$TexturePacker:SmartUpdate:a097e4cd315c2aec689b4491bf324c7c$</string>
             <key>textureFileName</key>
             <string>menuMap.png</string>
         </dict>

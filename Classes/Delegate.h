@@ -2,6 +2,8 @@
 #define __DELEGATE_H__
 
 #include "Box2D\Box2D.h"
+#include "cocos2d.h"
+USING_NS_CC;
 
 class GameViewDelegate{
 public:
@@ -17,6 +19,11 @@ public:
 	virtual ~GameModelDelegate(){};
 
 	virtual void testModelDelegate(){};
+	virtual void playAttack(CCPoint attacker,CCPoint target){};
+	virtual void changePlayVel(float speed){};
+	virtual void playKiss(CCPoint source,CCPoint des){};
+	virtual void finish(){};
+	virtual CCSprite* getSprite(){return NULL;};
 };
 
 class GameResinBallViewDelegate{

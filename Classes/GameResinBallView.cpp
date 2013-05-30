@@ -42,7 +42,7 @@ bool GameResinBallView::init(GameResinBallViewDelegate* pViewDelegate,GameResinB
 		_ResinBall=CCSprite::create("amber.png");
 		_ResinBall->setScale(_ResinBallModel->getBallRadius()/_ResinBall->getContentSize().width);
 		_ResinBall->retain();
-		addChild(_ResinBall,2);
+		addChild(_ResinBall,20);
 		_ResinBall->setPosition(_ResinBallModel->getPosition());
 
 		this->setTouchEnabled(true);
@@ -54,11 +54,13 @@ bool GameResinBallView::init(GameResinBallViewDelegate* pViewDelegate,GameResinB
 }
 void GameResinBallView::onEnter(){
 	CCLayer::onEnter();	
-	
+	/*
 	streak = CCMotionStreak::create(2, 3, _ResinBallModel->getRadius()*1.5, ccWHITE, "yellow.png");
-	//streak->setScale(0.5);
-	addChild(streak,5);
-	CCActionInterval *colorAction = CCRepeatForever::create((CCActionInterval *)CCSequence::create(
+	streak->setScale(0.5);
+	streak->setAnchorPoint(ccp(0.5,0.5));
+	streak->setPosition(ccp(0,0));
+	_ResinBall->addChild(streak,5);*/
+	/*CCActionInterval *colorAction = CCRepeatForever::create((CCActionInterval *)CCSequence::create(
         CCTintTo::create(0.2f, 255, 0, 0),
         CCTintTo::create(0.2f, 0, 255, 0),
         CCTintTo::create(0.2f, 0, 0, 255),
@@ -67,7 +69,7 @@ void GameResinBallView::onEnter(){
         CCTintTo::create(0.2f, 255, 0, 255),
         CCTintTo::create(0.2f, 255, 255, 255),
         NULL));
-
+		*/
     //streak->runAction(colorAction);
 }
 void GameResinBallView::onExit(){
@@ -80,7 +82,7 @@ void GameResinBallView::update(float dt){
 		return;
 	}
 	
-	streak->setPosition(_ResinBallModel->getPosition());//设置跟随目标对象
+//	streak->setPosition(_ResinBallModel->getPosition());//设置跟随目标对象
 	_ResinBall->setPosition(_ResinBallModel->getPosition());
 }
 
@@ -142,7 +144,7 @@ bool MapLayer::init(){
 		
 		_map->setPosition(ccp(winSize.width/2,winSize.height/2));
 
-		float deltaX=winSize.width*(WORLD_SCALE-1)/2;
+		float deltaX=winSize.width*(WORLD_SCALE-1-0.2)/2;
 		float deltaY=winSize.height*(WORLD_SCALE-1)/2;
 
 		//地板
@@ -175,8 +177,8 @@ void MapLayer::updateFloor(CCPoint delta){
 //	CCLog("%f,%f",delta.x,delta.y);
 	_floor[0]->setPosition(ccp(_floor[0]->getPositionX()-delta.x,_floor[0]->getPositionY()-delta.y));
 	_floor[1]->setPosition(ccp(_floor[1]->getPositionX()-delta.x,_floor[1]->getPositionY()-delta.y));
-	//_floor[2]->setPosition(ccp(_floor[2]->getPositionX()-delta.x,_floor[2]->getPositionY()-delta.y));
-	//_floor[3]->setPosition(ccp(_floor[3]->getPositionX()-delta.x,_floor[3]->getPositionY()-delta.y));
+	_floor[2]->setPosition(ccp(_floor[2]->getPositionX()-delta.x,_floor[2]->getPositionY()-delta.y));
+	_floor[3]->setPosition(ccp(_floor[3]->getPositionX()-delta.x,_floor[3]->getPositionY()-delta.y));
 }
 
 void MapLayer::updateMap(CCPoint nextPosition){

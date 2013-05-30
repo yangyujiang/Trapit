@@ -5,6 +5,7 @@
 #include "Constant.h"
 #include "../extensions/cocos-ext.h"
 #include "GameResinBallModel.h"
+#include "SkillSlotAdapter.h"
 USING_NS_CC;
 USING_NS_CC_EXT;
 
@@ -12,11 +13,12 @@ USING_NS_CC_EXT;
 class StaticLayer :public cocos2d::CCLayer
 {
 protected:
-	CCMenuItemImage *pCloseItem;
-	CCMenuItemImage *pPauseItem;//暂停按钮
+	CCMenuItem *pCloseItem;
+	CCMenuItem *pPauseItem;//暂停按钮
 	GameResinBallModel* model;
 	CCLabelBMFont* ttf_resin;
 	CCLabelBMFont* ttf_insectNum;
+	SkillSlotAdapter* skills;//技能栏
 public:
 	InnerStage innerStage;//调试用
 public:
@@ -33,10 +35,16 @@ public:
 	void blockUValueChanged(CCObject* pSender,CCControlEvent event);
 	void ballMaxVValueChanged(CCObject* pSender,CCControlEvent event);
 	
+	void playLevelUp(int curLevel);//播放升级动画
+	void endPlayLevelUp();
+	void playGameOver();//播放gameOver动画
+	void endPlayGameOver();//结束播放gameOver动画
+
 	// a selector callback
     void menuCloseCallback(CCObject* pSender);
 	void menuPauseCallBack(CCObject* pSender);
 	void menuGoBackCallBack(CCObject* pSender);
+	void menuFreezeCallBack(CCObject* pSender);
 	void keepStill(CCPoint lastPositionOfScene);//保持不动
 	void draw();
 
